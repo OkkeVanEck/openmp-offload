@@ -1,0 +1,47 @@
+ Executing      : ./jacobi_gfortran.o            
+ nCells         :        40768       40768
+ Max iterations :           10
+ 
+======== Serial ========
+Timing (s)    : 4.607E+01
+Speedups      : 1.000E+00
+Residual      : 4.105E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== OpenMP_CPU ========
+nThreads      :128
+Timing (s)    : 1.510E+01
+Speedups      : 3.051E+00
+Residual      : 4.105E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== OpenMP_GPU_Teams ========
+Timing (s)    : 7.493E+01
+Speedups      : 6.149E-01
+Residual      : 4.105E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel ========
+Timing (s)    : 1.503E+01
+Speedups      : 3.066E+00
+Residual      : 4.105E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Implicit_Map ========
+Timing (s)    : 1.504E+01
+Speedups      : 3.062E+00
+Residual      : 4.105E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Data ========
+Timing (s)    : 1.506E+01
+Speedups      : 3.059E+00
+Residual      : 4.105E-01
+nIterations   :     10
+Validation    :  PASSED
+

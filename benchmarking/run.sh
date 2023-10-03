@@ -30,12 +30,11 @@ make $compiler
 speedup_file="../../benchmarking/${output_folder}/speedups.txt"
 
 # Run for different grid sizes and store full output + speedups extracted.
-# sizes=(1024 2048 5096 10192 20384 40768)
-sizes=(1024 2048)
+sizes=(1024 2048 5096 10192 20384 40768)
 numversions=6
 version_base=5
 version_offset=7
-speed_base=8
+speed_base=7
 
 for s in "${sizes[@]}"; do
     # Run Jacobi and store full output.
