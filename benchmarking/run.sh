@@ -6,6 +6,8 @@ if [ "$1" == "gfortran" ]; then
     compiler="gfortran"
 elif [ "$1" == "nvfortran" ]; then
     compiler="nvfortran"
+elif [ "$1" == "ftn" ]; then
+    compiler="ftn"
 else
     echo "Please specify a compiler with: ./run.sh <compiler_name>"
     echo "Options: gfortran, nvfortran"

@@ -4,13 +4,14 @@ include ../../Makefiles/Makefile.inc
 # 	$(FC) $(FFLAGS) $(LIBS) $< -o ${@}.${COMPILER}.exe
 # 	rm -f *.mod
 
-jacobi.Fortran: Jacobi.f90
-	gfortran -O3 -homp -hnoacc -Ofast -fopenmp Jacobi.f90 -lm -o jacobi.o
+ftn: Jacobi.f90
+	ftn -O3 -homp -hnoacc -Ofast -fopenmp Jacobi.f90 -lm -o jacobi_ftn.o
 
-jacobi.debug: Jacobi.f90
-	gfortran -g -O0 -fopenmp Jacobi.f90 -lm -o jacobi_debug.o
+nvfortran: Jacobi.f90
+	nvfortran -O3 -fopenmp Jacobi.f90 -lm -o jacobi_nvfortran.o
 
-all: jacobi.Fortran
+gfortran: Jacobi.f90
+	gfortran -O3 -homp -hnoacc -Ofast -fopenmp Jacobi.f90 -lm -o jacobi_gfortran.o
 
 clean:
 	rm -f *.o *.mod *.exe
