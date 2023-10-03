@@ -4,11 +4,8 @@ from matplotlib import pyplot as plt
 
 
 def get_data():
-    # computer = input("What computer: ").strip()
-    # compiler = input("What compiler: ").strip()
-
-    computer = "meluxina"
-    compiler = "gfortran"
+    computer = input("What computer: ").strip()
+    compiler = input("What compiler: ").strip()
 
     print("Plotting for:")
     print(f"\tComputer: {computer}")
@@ -16,13 +13,10 @@ def get_data():
 
     speedups = pd.read_csv(f"{computer}/output_{compiler}/speedups.txt")
     
-    return speedups
+    return speedups, computer, compiler
 
 
-def plot_x_version(speedups):
-    # Get data.
-    speedups = get_data()
-
+def plot_x_version(speedups, computer, compiler):
     # Transform version in something readable.
     version_trans = {
         "Serial": "Serial",
@@ -36,12 +30,11 @@ def plot_x_version(speedups):
 
     plt.figure().gca()
     sns.lineplot(data=speedups, x="version", y="speedup", hue="size", palette="tab10", marker=".")
+    plt.title(f"Speedups on {computer} using {compiler}")
+    plt.savefig(f"figures/{computer}_{compiler}_version.png")
 
 
-def plot_x_size(speedups):
-    # Get data.
-    speedups = get_data()
-
+def plot_x_size(speedups, computer, compiler):
     ax = plt.figure().gca()
     sns.scatterplot(data=speedups, x="size", y="speedup", hue="version", palette="tab10")
 
@@ -50,13 +43,15 @@ def plot_x_size(speedups):
     ax.set_xticks(sorted(list(set(speedups["size"]))))
     ax.set_xticklabels(sorted(list(set(speedups["size"]))))
     plt.minorticks_off()
+    plt.title(f"Speedups on {computer} using {compiler}")
+    plt.savefig(f"figures/{computer}_{compiler}_size.png")
 
 
 if __name__ == "__main__":
     # Get data.
-    speedups = get_data()
+    speedups, computer, compiler = get_data()
 
     # Plot the data.
-    plot_x_size(speedups)
-    plot_x_version(speedups)
+    plot_x_size(speedups, computer, compiler)
+    plot_x_version(speedups, computer, compiler)
     plt.show()
