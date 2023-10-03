@@ -1,9 +1,5 @@
 include ../../Makefiles/Makefile.inc
 
-# jacobi.Fortran : Jacobi.f90
-# 	$(FC) $(FFLAGS) $(LIBS) $< -o ${@}.${COMPILER}.exe
-# 	rm -f *.mod
-
 ftn: Jacobi.f90
 	ftn -O3 -homp -hnoacc -Ofast -fopenmp Jacobi.f90 -lm -o jacobi_ftn.o
 
