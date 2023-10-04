@@ -13,7 +13,7 @@ elif [ "$1" == "nvfortran" ]; then
 elif [ "$1" == "ftn" ]; then
     compiler="ftn"
     profiler="rocprof"
-    profflags="--hip-trace --hsa-trace --stats"
+    profflags="-i rocprof_counters.txt --hip-trace --hsa-trace --stats"
 else
     echo "Please specify a compiler with: ./run.sh <compiler_name>"
     echo "Options: gfortran, nvfortran, ftn"
