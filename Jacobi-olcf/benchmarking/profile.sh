@@ -5,12 +5,15 @@
 if [ "$1" == "gfortran" ]; then
     compiler="gfortran"
     profiler="nvprof"
+    profflags="--print-gpu-trace --print-api-trace"
 elif [ "$1" == "nvfortran" ]; then
     compiler="nvfortran"
     profiler="nvprof"
+    profflags="--print-gpu-trace --print-api-trace"
 elif [ "$1" == "ftn" ]; then
     compiler="ftn"
     profiler="rocprof"
+    profflags="--hip-trace --hsa-trace --stats"
 else
     echo "Please specify a compiler with: ./run.sh <compiler_name>"
     echo "Options: gfortran, nvfortran, ftn"
@@ -60,7 +63,7 @@ speed_base=7
 # Run Jacobi and store full output.
 echo "Running size ${gridsize}.."
 full_file="../../benchmarking/${output_folder}/full_${gridsize}.txt"
-$profiler --hip-trace --stats ./jacobi_${compiler}.o ${gridsize} $numiter &> $full_file
+$profiler $profflags ./jacobi_${compiler}.o ${gridsize} $numiter &> $full_file
 
 # Move results to the output folder.
 mv results.* ../../benchmarking/${output_folder}/
