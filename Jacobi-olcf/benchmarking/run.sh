@@ -10,7 +10,7 @@ elif [ "$1" == "ftn" ]; then
     compiler="ftn"
 else
     echo "Please specify a compiler with: ./run.sh <compiler_name>"
-    echo "Options: gfortran, nvfortran"
+    echo "Options: gfortran, nvfortran, ftn"
     exit 1
 fi
 
