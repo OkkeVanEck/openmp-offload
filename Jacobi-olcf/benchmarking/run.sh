@@ -11,13 +11,25 @@ elif [ "$1" == "ftn" ]; then
 else
     echo "Please specify a compiler with: ./run.sh <compiler_name>"
     echo "Options: gfortran, nvfortran"
-    exit
+    exit 1
 fi
 
 echo "Using the '${compiler}' compiler.."
 
+# Parse arguments to iteration selection.
+re='^[0-9]+$'
+if [[ $2 =~ $re ]] ; then
+    numiter=$2
+else
+    echo "Please specify the number of iterations with: 
+        ./run.sh <compiler_name> <#iterations>"
+    exit 1
+fi
+
+echo "Running for ${numiter} iteration(s).."
+
 # Make output folder and setup csv for speedups.
-output_folder="output_${compiler}"
+output_folder="output_${compiler}_i${iterations}"
 mkdir -p $output_folder
 speedup_file="${output_folder}/speedups.txt"
 rm -f $speedup_file
@@ -42,7 +54,7 @@ for s in "${sizes[@]}"; do
     # Run Jacobi and store full output.
     echo -n "Running size ${s}.."
     full_file="../../benchmarking/${output_folder}/full_${s}.txt"
-    ./jacobi_${compiler}.o ${s} 10 &> $full_file
+    ./jacobi_${compiler}.o ${s} $numiter &> $full_file
 
     # Extract version name and speedups from full output.
     for v in $(seq $numversions); do

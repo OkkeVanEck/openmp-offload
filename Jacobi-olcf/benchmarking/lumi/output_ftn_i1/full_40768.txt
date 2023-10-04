@@ -1,0 +1,47 @@
+ Executing      : ./jacobi_ftn.o                 
+ nCells         :  2*40768
+ Max iterations :  1
+ 
+======== Serial ========
+Timing (s)    : 4.683E+00
+Speedups      : 1.000E+00
+Residual      : 9.869E-01
+nIterations   :      1
+Validation    :  PASSED
+
+======== OpenMP_CPU ========
+nThreads      :112
+Timing (s)    : 1.388E+00
+Speedups      : 3.374E+00
+Residual      : 9.869E-01
+nIterations   :      1
+Validation    :  PASSED
+
+======== OpenMP_GPU_Teams ========
+Timing (s)    : 6.784E+00
+Speedups      : 6.903E-01
+Residual      : 9.869E-01
+nIterations   :      1
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel ========
+Timing (s)    : 6.342E+00
+Speedups      : 7.384E-01
+Residual      : 9.869E-01
+nIterations   :      1
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Implicit_Map ========
+Timing (s)    : 7.211E+00
+Speedups      : 6.495E-01
+Residual      : 9.869E-01
+nIterations   :      1
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Data ========
+Timing (s)    : 2.198E+00
+Speedups      : 2.131E+00
+Residual      : 9.869E-01
+nIterations   :      1
+Validation    :  PASSED
+
