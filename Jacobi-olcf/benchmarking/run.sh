@@ -29,7 +29,7 @@ fi
 echo "Running for ${numiter} iteration(s).."
 
 # Make output folder and setup csv for speedups.
-output_folder="output_${compiler}_i${iterations}"
+output_folder="output_${compiler}_i${numiter}"
 mkdir -p $output_folder
 speedup_file="${output_folder}/speedups.txt"
 rm -f $speedup_file
