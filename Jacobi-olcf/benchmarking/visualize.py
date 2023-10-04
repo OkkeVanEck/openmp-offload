@@ -34,7 +34,7 @@ def plot_x_version(speedups, computer, compiler, iterations):
     plt.figure(figsize=(7,7)).gca()
     sns.lineplot(data=speedups, x="version", y="speedup", hue="size", palette="tab10", marker=".")
     plt.title(f"Speedups on {computer} using {compiler} with {iterations} iterations")
-    plt.savefig(f"figures/{computer}_{compiler}_version.png")
+    plt.savefig(f"figures/{computer}_{compiler}_i{iterations}_version.png")
 
 
 def plot_x_size(speedups, computer, compiler, iterations):
@@ -47,7 +47,7 @@ def plot_x_size(speedups, computer, compiler, iterations):
     ax.set_xticklabels(sorted(list(set(speedups["size"]))))
     plt.minorticks_off()
     plt.title(f"Speedups on {computer} using {compiler} with {iterations} iterations")
-    plt.savefig(f"figures/{computer}_{compiler}_size.png")
+    plt.savefig(f"figures/{computer}_{compiler}_i{iterations}_size.png")
 
 
 if __name__ == "__main__":
