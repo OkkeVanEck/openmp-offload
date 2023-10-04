@@ -1,0 +1,52 @@
+RPL: on '231004_154917' from '/opt/rocm-5.2.3' in '/users/vaneckok/openmp-offload/Jacobi-olcf/Fortran/6-combined'
+RPL: profiling '"./jacobi_ftn.o" "10192" "10"'
+RPL: input file ''
+RPL: output dir '/tmp/rpl_data_231004_154917_70437'
+RPL: result dir '/tmp/rpl_data_231004_154917_70437/input_results_231004_154917'
+ Executing      : ./jacobi_ftn.o                 
+ nCells         :  2*10192
+ Max iterations :  10
+ 
+======== Serial ========
+Timing (s)    : 1.597E+00
+Speedups      : 1.000E+00
+Residual      : 3.771E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== OpenMP_CPU ========
+nThreads      :112
+Timing (s)    : 8.926E-01
+Speedups      : 1.789E+00
+Residual      : 3.771E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== OpenMP_GPU_Teams ========
+Timing (s)    : 4.771E+00
+Speedups      : 3.347E-01
+Residual      : 3.771E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel ========
+Timing (s)    : 8.421E-01
+Speedups      : 1.896E+00
+Residual      : 3.771E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Implicit_Map ========
+Timing (s)    : 8.436E-01
+Speedups      : 1.893E+00
+Residual      : 3.771E-01
+nIterations   :     10
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Data ========
+Timing (s)    : 8.424E-01
+Speedups      : 1.895E+00
+Residual      : 3.771E-01
+nIterations   :     10
+Validation    :  PASSED
+
