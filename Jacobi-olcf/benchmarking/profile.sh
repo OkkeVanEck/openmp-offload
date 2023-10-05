@@ -15,43 +15,44 @@ elif [ "$1" == "nvfortran" ]; then
 elif [ "$1" == "ftn" ]; then
     compiler="ftn"
     profiler="rocprof"
-    profflags="-i rocprof_counters.txt --hip-trace --hsa-trace --stats"
+    profflags="-i rocprof_counters.txt --hip-trace --hsa-trace --stats -o results.csv"
     resfiles_pattern="results.*"
 else
     echo "Please specify a compiler with: 
-        ./run.sh <compiler_name>  <#iterations> <grid_size>"
+        ./run.sh <compiler_name> <grid_size> <#iterations>"
     echo "Options: gfortran, nvfortran, ftn"
     exit 1
 fi
 
 echo "Using the '${compiler}' compiler.."
 
-# Parse arguments to iteration selection.
-re='^[0-9]+$'
-if [[ $2 =~ $re ]] ; then
-    numiter=$2
-else
-    echo "Please specify the number of iterations with: 
-        ./profile.sh <compiler_name> <#iterations> <grid_size>"
-    exit 1
-fi
-
-echo "Running for ${numiter} iteration(s).."
-
 # Parse arguments to size selection.
 re='^[0-9]+$'
-if [[ $3 =~ $re ]] ; then
-    gridsize=$3
+if [[ $2 =~ $re ]] ; then
+    gridsize=$2
 else
     echo "Please specify the grid size with: 
-        ./profile.sh <compiler_name> <#iterations> <grid_size>"
+        ./profile.sh <compiler_name> <grid_size> <#iterations>"
     exit 1
 fi
 
 echo "Running with grid size ${gridsize}.."
 
+# Parse arguments to iteration selection.
+re='^[0-9]+$'
+if [[ $3 =~ $re ]] ; then
+    numiter=$3
+else
+    echo "Please specify the number of iterations with: 
+        ./profile.sh <compiler_name> <grid_size> <#iterations>"
+    exit 1
+fi
+
+echo "Running for ${numiter} iteration(s).."
+
+
 # Make output folder and setup csv for speedups.
-output_folder="profile_${compiler}_i${numiter}_s${gridsize}"
+output_folder="profile_${compiler}_s${gridsize}_i${numiter}"
 mkdir -p $output_folder
 
 # First make folder for output and compile the code.
