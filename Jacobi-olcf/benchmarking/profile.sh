@@ -4,18 +4,22 @@
 # Parse arguments to compiler selection.
 if [ "$1" == "gfortran" ]; then
     compiler="gfortran"
-    profiler="nvprof"
-    profflags="--print-gpu-trace --print-api-trace"
+    profiler="nsys"
+    profflags="profile -t cuda --stats=true"
+    resfiles_pattern="report*"
 elif [ "$1" == "nvfortran" ]; then
     compiler="nvfortran"
-    profiler="nvprof"
-    profflags="--print-gpu-trace --print-api-trace"
+    profiler="nsys"
+    profflags="profile -t cuda --stats=true"
+    resfiles_pattern="report*"
 elif [ "$1" == "ftn" ]; then
     compiler="ftn"
     profiler="rocprof"
     profflags="-i rocprof_counters.txt --hip-trace --hsa-trace --stats"
+    resfiles_pattern="results.*"
 else
-    echo "Please specify a compiler with: ./run.sh <compiler_name>"
+    echo "Please specify a compiler with: 
+        ./run.sh <compiler_name>  <#iterations> <grid_size>"
     echo "Options: gfortran, nvfortran, ftn"
     exit 1
 fi
@@ -66,7 +70,7 @@ full_file="../../benchmarking/${output_folder}/full_${gridsize}.txt"
 $profiler $profflags ./jacobi_${compiler}.o ${gridsize} $numiter &> $full_file
 
 # Move results to the output folder.
-mv results.* ../../benchmarking/${output_folder}/
+mv $resfiles_pattern ../../benchmarking/${output_folder}/
 
 # Clean up afterwards.
 make clean

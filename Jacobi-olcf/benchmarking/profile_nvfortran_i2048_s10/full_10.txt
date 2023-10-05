@@ -1,0 +1,62 @@
+Warning: LBR backtrace method is not supported on this platform. DWARF backtrace method will be used.
+ Executing      : /mnt/tier2/users/u101087/openmp
+ nCells         :            10           10
+ Max iterations :          2048
+ 
+======== Serial ========
+Timing (s)    : 1.192E-05
+Speedups      : 1.000E+00
+Residual      : 9.950E-06
+nIterations   :     51
+Validation    :  PASSED
+
+======== OpenMP_CPU ========
+nThreads      :128
+Timing (s)    : 6.257E-02
+Speedups      : 1.905E-04
+Residual      : 9.950E-06
+nIterations   :     51
+Validation    :  PASSED
+
+======== OpenMP_GPU_Teams ========
+Timing (s)    : 2.022E-04
+Speedups      : 5.896E-02
+Residual      : 9.950E-06
+nIterations   :     51
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel ========
+Timing (s)    : 7.259E-03
+Speedups      : 1.642E-03
+Residual      : 9.950E-06
+nIterations   :     51
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Implicit_Map ========
+Timing (s)    : 6.985E-03
+Speedups      : 1.707E-03
+Residual      : 9.950E-06
+nIterations   :     51
+Validation    :  PASSED
+
+======== Compute_OpenMP_GPU_Teams_Parallel_Data ========
+Timing (s)    : 6.878E-03
+Speedups      : 1.733E-03
+Residual      : 9.950E-06
+nIterations   :     51
+Validation    :  PASSED
+
+Generating '/tmp/nsys-report-c8e8.qdstrm'
+[1/6] [0%                          ] report1.nsys-rep[1/6] [0%                          ] report1.nsys-rep[1/6] [7%                          ] report1.nsys-rep[1/6] [8%                          ] report1.nsys-rep[1/6] [=16%                        ] report1.nsys-rep[1/6] [===24%                      ] report1.nsys-rep[1/6] [=====32%                    ] report1.nsys-rep[1/6] [========40%                 ] report1.nsys-rep[1/6] [==========48%               ] report1.nsys-rep[1/6] [===========50%              ] report1.nsys-rep[1/6] [===========51%              ] report1.nsys-rep[1/6] [===========52%              ] report1.nsys-rep[1/6] [===========53%              ] report1.nsys-rep[1/6] [============54%             ] report1.nsys-rep[1/6] [============55%             ] report1.nsys-rep[1/6] [============56%             ] report1.nsys-rep[1/6] [============57%             ] report1.nsys-rep[1/6] [=============58%            ] report1.nsys-rep[1/6] [=============59%            ] report1.nsys-rep[1/6] [=============60%            ] report1.nsys-rep[1/6] [==============61%           ] report1.nsys-rep[1/6] [==============62%           ] report1.nsys-rep[1/6] [==============63%           ] report1.nsys-rep[1/6] [==============64%           ] report1.nsys-rep[1/6] [===============65%          ] report1.nsys-rep[1/6] [===============66%          ] report1.nsys-rep[1/6] [===============67%          ] report1.nsys-rep[1/6] [================68%         ] report1.nsys-rep[1/6] [================69%         ] report1.nsys-rep[1/6] [================70%         ] report1.nsys-rep[1/6] [================71%         ] report1.nsys-rep[1/6] [=================72%        ] report1.nsys-rep[1/6] [=================73%        ] report1.nsys-rep[1/6] [=================74%        ] report1.nsys-rep[1/6] [==================75%       ] report1.nsys-rep[1/6] [==================76%       ] report1.nsys-rep[1/6] [==================77%       ] report1.nsys-rep[1/6] [==================78%       ] report1.nsys-rep[1/6] [===================79%      ] report1.nsys-rep[1/6] [===================80%      ] report1.nsys-rep[1/6] [===================81%      ] report1.nsys-rep[1/6] [===================82%      ] report1.nsys-rep[1/6] [====================83%     ] report1.nsys-rep[1/6] [====================84%     ] report1.nsys-rep[1/6] [====================85%     ] report1.nsys-rep[1/6] [=====================86%    ] report1.nsys-rep[1/6] [=====================87%    ] report1.nsys-rep[1/6] [=====================88%    ] report1.nsys-rep[1/6] [=====================89%    ] report1.nsys-rep[1/6] [======================90%   ] report1.nsys-rep[1/6] [======================91%   ] report1.nsys-rep[1/6] [======================92%   ] report1.nsys-rep[1/6] [=======================93%  ] report1.nsys-rep[1/6] [=======================94%  ] report1.nsys-rep[1/6] [=======================95%  ] report1.nsys-rep[1/6] [=======================96%  ] report1.nsys-rep[1/6] [========================97% ] report1.nsys-rep[1/6] [========================98% ] report1.nsys-rep[1/6] [========================99% ] report1.nsys-rep[1/6] [========================100%] report1.nsys-rep[1/6] [========================100%] report1.nsys-rep[1/6] [========================100%] report1.nsys-rep
+[2/6] [0%                          ] report1.sqlite[2/6] [1%                          ] report1.sqlite[2/6] [2%                          ] report1.sqlite[2/6] [3%                          ] report1.sqlite[2/6] [4%                          ] report1.sqlite[2/6] [5%                          ] report1.sqlite[2/6] [6%                          ] report1.sqlite[2/6] [7%                          ] report1.sqlite[2/6] [8%                          ] report1.sqlite[2/6] [9%                          ] report1.sqlite[2/6] [10%                         ] report1.sqlite[2/6] [11%                         ] report1.sqlite[2/6] [12%                         ] report1.sqlite[2/6] [13%                         ] report1.sqlite[2/6] [14%                         ] report1.sqlite[2/6] [=15%                        ] report1.sqlite[2/6] [=16%                        ] report1.sqlite[2/6] [=17%                        ] report1.sqlite[2/6] [==18%                       ] report1.sqlite[2/6] [==19%                       ] report1.sqlite[2/6] [==20%                       ] report1.sqlite[2/6] [==21%                       ] report1.sqlite[2/6] [===22%                      ] report1.sqlite[2/6] [===23%                      ] report1.sqlite[2/6] [===24%                      ] report1.sqlite[2/6] [====25%                     ] report1.sqlite[2/6] [====26%                     ] report1.sqlite[2/6] [====27%                     ] report1.sqlite[2/6] [====28%                     ] report1.sqlite[2/6] [=====29%                    ] report1.sqlite[2/6] [=====30%                    ] report1.sqlite[2/6] [=====31%                    ] report1.sqlite[2/6] [=====32%                    ] report1.sqlite[2/6] [======33%                   ] report1.sqlite[2/6] [======34%                   ] report1.sqlite[2/6] [======35%                   ] report1.sqlite[2/6] [=======36%                  ] report1.sqlite[2/6] [=======37%                  ] report1.sqlite[2/6] [=======38%                  ] report1.sqlite[2/6] [=======39%                  ] report1.sqlite[2/6] [========40%                 ] report1.sqlite[2/6] [========41%                 ] report1.sqlite[2/6] [========42%                 ] report1.sqlite[2/6] [=========43%                ] report1.sqlite[2/6] [=========44%                ] report1.sqlite[2/6] [=========45%                ] report1.sqlite[2/6] [=========46%                ] report1.sqlite[2/6] [==========47%               ] report1.sqlite[2/6] [==========48%               ] report1.sqlite[2/6] [==========49%               ] report1.sqlite[2/6] [===========50%              ] report1.sqlite[2/6] [===========51%              ] report1.sqlite[2/6] [===========52%              ] report1.sqlite[2/6] [===========53%              ] report1.sqlite[2/6] [============54%             ] report1.sqlite[2/6] [============55%             ] report1.sqlite[2/6] [============56%             ] report1.sqlite[2/6] [============57%             ] report1.sqlite[2/6] [=============58%            ] report1.sqlite[2/6] [=============59%            ] report1.sqlite[2/6] [=============60%            ] report1.sqlite[2/6] [==============61%           ] report1.sqlite[2/6] [==============62%           ] report1.sqlite[2/6] [==============63%           ] report1.sqlite[2/6] [==============64%           ] report1.sqlite[2/6] [===============65%          ] report1.sqlite[2/6] [===============66%          ] report1.sqlite[2/6] [===============67%          ] report1.sqlite[2/6] [================68%         ] report1.sqlite[2/6] [================69%         ] report1.sqlite[2/6] [================70%         ] report1.sqlite[2/6] [================71%         ] report1.sqlite[2/6] [=================72%        ] report1.sqlite[2/6] [=================73%        ] report1.sqlite[2/6] [=================74%        ] report1.sqlite[2/6] [==================75%       ] report1.sqlite[2/6] [==================76%       ] report1.sqlite[2/6] [==================77%       ] report1.sqlite[2/6] [==================78%       ] report1.sqlite[2/6] [===================79%      ] report1.sqlite[2/6] [===================80%      ] report1.sqlite[2/6] [===================81%      ] report1.sqlite[2/6] [===================82%      ] report1.sqlite[2/6] [====================83%     ] report1.sqlite[2/6] [====================84%     ] report1.sqlite[2/6] [====================85%     ] report1.sqlite[2/6] [=====================86%    ] report1.sqlite[2/6] [=====================87%    ] report1.sqlite[2/6] [=====================88%    ] report1.sqlite[2/6] [=====================89%    ] report1.sqlite[2/6] [======================90%   ] report1.sqlite[2/6] [======================91%   ] report1.sqlite[2/6] [======================92%   ] report1.sqlite[2/6] [=======================93%  ] report1.sqlite[2/6] [=======================94%  ] report1.sqlite[2/6] [=======================95%  ] report1.sqlite[2/6] [=======================96%  ] report1.sqlite[2/6] [========================97% ] report1.sqlite[2/6] [========================98% ] report1.sqlite[2/6] [========================99% ] report1.sqlite[2/6] [========================100%] report1.sqlite[2/6] [========================100%] report1.sqlite
+SKIPPED: /mnt/tier2/users/u101087/openmp-offload/Jacobi-olcf/Fortran/6-combined/report1.sqlite does not contain CUDA trace data.
+SKIPPED: /mnt/tier2/users/u101087/openmp-offload/Jacobi-olcf/Fortran/6-combined/report1.sqlite does not contain CUDA kernel data.
+SKIPPED: /mnt/tier2/users/u101087/openmp-offload/Jacobi-olcf/Fortran/6-combined/report1.sqlite does not contain GPU memory data.
+SKIPPED: /mnt/tier2/users/u101087/openmp-offload/Jacobi-olcf/Fortran/6-combined/report1.sqlite does not contain GPU memory data.
+[3/6] Executing 'cudaapisum' stats report
+[4/6] Executing 'gpukernsum' stats report
+[5/6] Executing 'gpumemtimesum' stats report
+[6/6] Executing 'gpumemsizesum' stats report
+Generated:
+    /mnt/tier2/users/u101087/openmp-offload/Jacobi-olcf/Fortran/6-combined/report1.nsys-rep
+    /mnt/tier2/users/u101087/openmp-offload/Jacobi-olcf/Fortran/6-combined/report1.sqlite
