@@ -3,45 +3,45 @@
  Max iterations :            10
  
 ======== Serial ========
-Timing (s)    : 1.925E-02
+Timing (s)    : 1.734E-02
 Speedups      : 1.000E+00
-Residual      : 3.303E-01
+Residual      : 3.603E-01
 nIterations   :     10
 Validation    :  PASSED
 
 ======== OpenMP_CPU ========
 nThreads      :128
-Timing (s)    : 4.688E-02
-Speedups      : 4.105E-01
-Residual      : 3.303E-01
+Timing (s)    : 4.240E-02
+Speedups      : 4.089E-01
+Residual      : 3.603E-01
 nIterations   :     10
 Validation    :  PASSED
 
 ======== OpenMP_GPU_Teams ========
-Timing (s)    : 2.046E-01
-Speedups      : 9.408E-02
-Residual      : 3.303E-01
+Timing (s)    : 1.264E+00
+Speedups      : 1.371E-02
+Residual      : 3.603E-01
 nIterations   :     10
 Validation    :  PASSED
 
 ======== Compute_OpenMP_GPU_Teams_Parallel ========
-Timing (s)    : 2.166E-02
-Speedups      : 8.886E-01
-Residual      : 3.303E-01
+Timing (s)    : 4.518E-02
+Speedups      : 3.838E-01
+Residual      : 3.603E-01
 nIterations   :     10
 Validation    :  PASSED
 
 ======== Compute_OpenMP_GPU_Teams_Parallel_Implicit_Map ========
-Timing (s)    : 9.726E-03
-Speedups      : 1.979E+00
-Residual      : 3.303E-01
+Timing (s)    : 7.803E-02
+Speedups      : 2.222E-01
+Residual      : 3.603E-01
 nIterations   :     10
 Validation    :  PASSED
 
 ======== Compute_OpenMP_GPU_Teams_Parallel_Data ========
-Timing (s)    : 7.353E-03
-Speedups      : 2.618E+00
-Residual      : 3.303E-01
+Timing (s)    : 3.425E-03
+Speedups      : 5.062E+00
+Residual      : 3.603E-01
 nIterations   :     10
 Validation    :  PASSED
 

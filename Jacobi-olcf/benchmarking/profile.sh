@@ -2,12 +2,7 @@
 # Profile version 6-combined for different grid sizes using given compiler.
 
 # Parse arguments to compiler selection.
-if [ "$1" == "gfortran" ]; then
-    compiler="gfortran"
-    profiler="nsys"
-    profflags="profile -t cuda --stats=true"
-    resfiles_pattern="report*"
-elif [ "$1" == "nvfortran" ]; then
+if [ "$1" == "nvfortran" ]; then
     compiler="nvfortran"
     profiler="nsys"
     profflags="profile -t cuda --stats=true"
@@ -20,7 +15,7 @@ elif [ "$1" == "ftn" ]; then
 else
     echo "Please specify a compiler with: 
         ./run.sh <compiler_name> <grid_size> <#iterations>"
-    echo "Options: gfortran, nvfortran, ftn"
+    echo "Options: nvfortran, ftn"
     exit 1
 fi
 

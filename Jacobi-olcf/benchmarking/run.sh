@@ -2,15 +2,13 @@
 # Test version 6-combined for different grid sizes using given compiler.
 
 # Parse arguments to compiler selection.
-if [ "$1" == "gfortran" ]; then
-    compiler="gfortran"
-elif [ "$1" == "nvfortran" ]; then
+if [ "$1" == "nvfortran" ]; then
     compiler="nvfortran"
 elif [ "$1" == "ftn" ]; then
     compiler="ftn"
 else
-    echo "Please specify a compiler with: ./run.sh <compiler_name>"
-    echo "Options: gfortran, nvfortran, ftn"
+    echo "Please specify a compiler with: ./run.sh <compiler_name> <#iterations>"
+    echo "Options: nvfortran, ftn"
     exit 1
 fi
 
