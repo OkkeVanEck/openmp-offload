@@ -15,7 +15,7 @@ elif [ "$1" == "nvfortran" ]; then
 elif [ "$1" == "ftn" ]; then
     compiler="ftn"
     profiler="rocprof"
-    profflags="-i rocprof_counters.txt --hip-trace --hsa-trace --stats -o results.csv"
+    profflags="-i rocprof_counters.txt --hip-trace --stats -o results.csv"
     resfiles_pattern="results.*"
 else
     echo "Please specify a compiler with: 

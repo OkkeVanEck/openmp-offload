@@ -1,3 +1,10 @@
+# Ignore results of Rocprof profiles.
+**/profile_ftn*/
+
+# Ignore fortran compilation files.
+**/.acc.s
+**/.mod
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
