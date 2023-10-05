@@ -2,8 +2,8 @@
 **/profile_ftn*/
 
 # Ignore fortran compilation files.
-**/.acc.s
-**/.mod
+**/*.acc.s
+**/*.mod
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
