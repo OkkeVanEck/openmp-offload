@@ -1,13 +1,16 @@
 module Nemo_mocks
 
     use omp_lib 
-    use iso_fortran_env
 
-    implicit none
-        
+    ! Set the working-precision to double precision.
+    use, intrinsic :: iso_fortran_env, wp=>real64
+
+
+    implicit none 
+  
     public :: &
     initialize_adv_x, &
-        adv_x_mock
+    adv_x_mock
 
 contains 
     SUBROUTINE initialize_adv_x(pdt, put , pcrh, psm , ps0 ,   &
@@ -17,13 +20,16 @@ contains
         !!  
         !! ** purpose :   Initializes variables required for adv_x_mock.
         !!----------------------------------------------------------------------
-        REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
-        REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
-        REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   put                ! i-direction ice velocity at U-point [m/s]
-        REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psm                ! area
-        REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   ps0                ! field to be advected
-        REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psx , psy          ! 1st moments 
-        REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
+        REAL(wp)                  , INTENT(out   ) ::   pdt             ! the time step
+        REAL(wp)                  , INTENT(out   ) ::   pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
+        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out   ) ::   put             ! i-direction ice velocity at U-point [m/s]
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psm                ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   ps0                ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psx , psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psxx, psyy, psxy   ! 2nd moments
+        
+        ! Local dimension for the array allocation.
+        INTEGER :: dim  
 
         ! Set non-array variables.
         pdt = 1
