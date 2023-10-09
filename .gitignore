@@ -4,6 +4,7 @@
 # Ignore fortran compilation files.
 **/*.acc.s
 **/*.mod
+**/*.o
 
 **/.vscode/
 

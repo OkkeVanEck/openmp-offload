@@ -1,17 +1,23 @@
-module Nemo_Adv_X_Mocks
+! NOTE: Define DEBUG_ON through compilation macro for extra output.
+
+MODULE Nemo_Adv_X_Mocks
 
     use omp_lib 
 
     ! Set the working-precision to double precision.
     use, intrinsic :: iso_fortran_env, wp=>real64
 
+    ! Import helper functions.
+    use Nemo_Helpers
+
     implicit none 
   
     public :: &
-    initialize_adv_x, &
-    adv_x_mock_seq
+        initialize_adv_x, &
+        adv_x_mock_seq
 
 contains 
+
     SUBROUTINE initialize_adv_x &
             (dim, jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
         !!----------------------------------------------------------------------
@@ -31,11 +37,23 @@ contains
         REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out) ::   e1e2t             ! associated metrics at t-point
         REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   tmask             ! land/ocean mask at T-pts
 
+        ! Variables used to control internal RNG.
+        INTEGER :: n
+        INTEGER, ALLOCATABLE :: seed(:)
+
+#ifdef DEBUG_ON
+    write (*,*) ""
+    write (*,*) "IN: initialize_adv_x"
+#endif
+
         ! Set config variables.
         pdt = 1
         pcrh = 1
 
         ! Allocate data for the variables.
+#ifdef DEBUG_ON
+    write (*,*) "initialize_adv_x: Allocating data.."
+#endif
         allocate ( put ( dim, dim ) )
         allocate ( psm ( dim, dim, dim) )
         allocate ( ps0 ( dim, dim, dim) )
@@ -47,8 +65,36 @@ contains
         allocate ( e1e2t (jpi, jpj) )
         allocate ( tmask ( dim, dim, dim) )
 
-        ! TODO: Fill matrices with bogus values.
+        ! Set internal RNG to be repeatable.
+        call random_seed(size=n)
+        allocate(seed(n))
+        seed = 123456789
+        call random_seed(put=seed)
+        deallocate(seed)
 
+        ! Fill matrices with random values.
+#ifdef DEBUG_ON
+    write (*,*) "initialize_adv_x: Filling matrices with random numbers.."
+#endif
+        call RANDOM_NUMBER(put)
+        call RANDOM_NUMBER(psm)
+        call RANDOM_NUMBER(ps0)
+        call RANDOM_NUMBER(psx)
+        call RANDOM_NUMBER(psy)
+        call RANDOM_NUMBER(psxx)
+        call RANDOM_NUMBER(psyy)
+        call RANDOM_NUMBER(psxy)
+        call RANDOM_NUMBER(e1e2t)
+        call RANDOM_NUMBER(tmask)
+
+        call print_real_2d_matrix(put, "put")
+        ! write( * , "(f7.2)" ) put
+
+
+#ifdef DEBUG_ON
+    write (*,*) "OUT: initialize_adv_x"
+    write (*,*) ""
+#endif
     END SUBROUTINE initialize_adv_x
 
 
@@ -85,12 +131,14 @@ contains
 
 
         ! Local version of used parameters.
-        REAL(wp), PARAMETER ::   epsi20 = 1.e-20_wp  !: small number 
-        REAL(wp)            ::   rswitch             !: switch for the presence of ice (1) or not (0)
-
-
+        REAL(wp), PARAMETER ::   epsi20 = 1.e-20_wp     ! small number 
+        REAL(wp)            ::   rswitch                ! switch for the presence of ice (1) or not (0)
+        INTEGER :: jpjm1, fs_2, fs_jpim1                ! optimization and config variables.
+#ifdef DEBUG_ON
+    write (*,*) ""
+    write (*,*) "IN: adv_x_mock_seq"
+#endif
         ! Local version assignment for variables.
-        INTEGER :: jpjm1, fs_2, fs_jpim1
         jpjm1 = jpj - 1
 
         ! Assignments according to vectopt_loop_substitute.h90 in Nemo codebase.
@@ -265,6 +313,11 @@ contains
                 
             END DO
         END DO
+
+#ifdef DEBUG_ON
+    write (*,*) "OUT: adv_x_mock_seq"
+    write (*,*) ""
+#endif
     END SUBROUTINE adv_x_mock_seq
 
 END MODULE Nemo_Adv_X_Mocks
@@ -295,6 +348,11 @@ program Nemo_Adv_X
         psxx, psyy, psxy, & ! 2nd moments
         tmask               ! land/ocean mask at T-pts
 
+#ifdef DEBUG_ON
+    write (*,*) ""
+    write (*,*) "IN: Main Program."
+#endif
+
     ! Setup the dimensions of the arrays and workspaces.
     dim = 5
     jpi = 4
@@ -307,5 +365,10 @@ program Nemo_Adv_X
     ! Call sequential code.
     call adv_x_mock_seq &
         (jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)      
+
+#ifdef DEBUG_ON
+    write (*,*) "OUT: Main Program."
+    write (*,*) ""
+#endif
 
 end program Nemo_Adv_X
