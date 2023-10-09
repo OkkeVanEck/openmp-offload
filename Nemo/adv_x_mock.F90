@@ -89,8 +89,11 @@ contains
 
 #ifdef DEBUG_ON
     ! Print 2d matrices to test repeatability.
-    call print_real_2d_matrix(put, "put")
-    call print_real_2d_matrix(e1e2t, "e1e2t")
+    write (*,*) "initialize_adv_x: Arrays generation"
+    ! call print_real_2d_matrix(put, "put")
+    ! call print_real_2d_matrix(e1e2t, "e1e2t")
+    call print_real_3d_matrix(ps0, "ps0")
+    write (*,*) ""
 #endif
 
 #ifdef DEBUG_ON
@@ -352,7 +355,7 @@ program Nemo_Adv_X
 
 #ifdef DEBUG_ON
     write (*,*) ""
-    write (*,*) "IN: Main Program."
+    write (*,*) "IN: main_program."
 #endif
 
     ! Setup the dimensions of the arrays and workspaces.
@@ -364,12 +367,28 @@ program Nemo_Adv_X
     call initialize_adv_x &
         (dim, jpi, jpj, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
 
+#ifdef DEBUG_ON
+    ! Print 2d matrices to test repeatability.
+    write (*,*) "main_program: after initialize_adv_x"
+    call print_real_2d_matrix(put, "put")
+    call print_real_2d_matrix(e1e2t, "e1e2t")
+    write (*,*) ""
+#endif
+
     ! Call sequential code.
     call adv_x_mock_seq &
-        (jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)      
+        (jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)     
+        
+#ifdef DEBUG_ON
+    ! Print 2d matrices to test repeatability.
+    write (*,*) "main_program: after adv_x_mock_seq"
+    call print_real_2d_matrix(put, "put")
+    call print_real_2d_matrix(e1e2t, "e1e2t")
+    write (*,*) ""
+#endif
 
 #ifdef DEBUG_ON
-    write (*,*) "OUT: Main Program."
+    write (*,*) "OUT: main_program."
     write (*,*) ""
 #endif
 
