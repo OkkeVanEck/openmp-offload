@@ -87,9 +87,11 @@ contains
         call RANDOM_NUMBER(e1e2t)
         call RANDOM_NUMBER(tmask)
 
-        call print_real_2d_matrix(put, "put")
-        ! write( * , "(f7.2)" ) put
-
+#ifdef DEBUG_ON
+    ! Print 2d matrices to test repeatability.
+    call print_real_2d_matrix(put, "put")
+    call print_real_2d_matrix(e1e2t, "e1e2t")
+#endif
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: initialize_adv_x"
