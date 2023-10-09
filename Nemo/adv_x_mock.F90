@@ -1,42 +1,41 @@
-module Nemo_mocks
+module Nemo_Adv_X_Mocks
 
     use omp_lib 
 
     ! Set the working-precision to double precision.
     use, intrinsic :: iso_fortran_env, wp=>real64
 
-
     implicit none 
   
     public :: &
     initialize_adv_x, &
-    adv_x_mock
+    adv_x_mock_seq
 
 contains 
-    SUBROUTINE initialize_adv_x(pdt, put , pcrh, psm , ps0 ,   &
-        &              psx, psxx, psy , psyy, psxy)
+    SUBROUTINE initialize_adv_x &
+            (dim, jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
         !!----------------------------------------------------------------------
         !!         **  routine     SUBROUTINE initialize_adv_x  **
         !!  
         !! ** purpose :   Initializes variables required for adv_x_mock.
         !!----------------------------------------------------------------------
-        REAL(wp)                  , INTENT(out   ) ::   pdt             ! the time step
-        REAL(wp)                  , INTENT(out   ) ::   pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
-        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out   ) ::   put             ! i-direction ice velocity at U-point [m/s]
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psm                ! area
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   ps0                ! field to be advected
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psx , psy          ! 1st moments 
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psxx, psyy, psxy   ! 2nd moments
-        
-        ! Local dimension for the array allocation.
-        INTEGER :: dim  
+        INTEGER                                , INTENT(out) ::   dim               ! Dimension of the arrays.
+        INTEGER                                , INTENT(in)  ::   jpi, jpj          ! Dimension of the workspaces.
+        REAL(wp)                               , INTENT(out) ::   pdt               ! the time step
+        REAL(wp)                               , INTENT(out) ::   pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
+        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out) ::   put               ! i-direction ice velocity at U-point [m/s]
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psm               ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   ps0               ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psx, psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   psxx, psyy, psxy  ! 2nd moments
+        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out) ::   e1e2t             ! associated metrics at t-point
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(out) ::   tmask             ! land/ocean mask at T-pts
 
-        ! Set non-array variables.
+        ! Set config variables.
         pdt = 1
         pcrh = 1
 
         ! Allocate data for the variables.
-        dim = 3
         allocate ( put ( dim, dim ) )
         allocate ( psm ( dim, dim, dim) )
         allocate ( ps0 ( dim, dim, dim) )
@@ -45,18 +44,23 @@ contains
         allocate ( psxx ( dim, dim, dim) )
         allocate ( psyy ( dim, dim, dim) )
         allocate ( psxy ( dim, dim, dim) )
+        allocate ( e1e2t (jpi, jpj) )
+        allocate ( tmask ( dim, dim, dim) )
+
+        ! TODO: Fill matrices with bogus values.
 
     END SUBROUTINE initialize_adv_x
 
 
-    SUBROUTINE adv_x_mock( pdt, put , pcrh, psm , ps0 ,   &
-        &              psx, psxx, psy , psyy, psxy )
+    SUBROUTINE adv_x_mock_seq &
+            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
         !!----------------------------------------------------------------------
         !!                **  routine adv_x  **
         !!  
         !! ** purpose :   Computes and adds the advection trend to sea-ice
         !!                variable on x axis
         !!----------------------------------------------------------------------
+        INTEGER                   , INTENT(in   ) ::   jpi, jpj           ! Dimension of the workspace.
         REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
         REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
         REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   put                ! i-direction ice velocity at U-point [m/s]
@@ -75,6 +79,24 @@ contains
         REAL(wp), DIMENSION(jpi,jpj) ::   zf0 , zfx  , zfy   , zbet   ! 2D workspace
         REAL(wp), DIMENSION(jpi,jpj) ::   zfm , zfxx , zfyy  , zfxy   !  -      -
         REAL(wp), DIMENSION(jpi,jpj) ::   zalg, zalg1, zalg1q         !  -      -
+        
+        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) ::   e1e2t   ! associated metrics at t-point
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   tmask   ! land/ocean mask at T-pts
+
+
+        ! Local version of used parameters.
+        REAL(wp), PARAMETER ::   epsi20 = 1.e-20_wp  !: small number 
+        REAL(wp)            ::   rswitch             !: switch for the presence of ice (1) or not (0)
+
+
+        ! Local version assignment for variables.
+        INTEGER :: jpjm1, fs_2, fs_jpim1
+        jpjm1 = jpj - 1
+
+        ! Assignments according to vectopt_loop_substitute.h90 in Nemo codebase.
+        fs_2 = 2
+        fs_jpim1 = jpi - 1
+
         !-----------------------------------------------------------------------
         !
         ! in order to avoid lbc_lnk (communications):
@@ -243,17 +265,47 @@ contains
                 
             END DO
         END DO
-    END SUBROUTINE adv_x_mock
+    END SUBROUTINE adv_x_mock_seq
 
-END MODULE Nemo_mocks
+END MODULE Nemo_Adv_X_Mocks
 
 
-program Nemo_adv_x_mock
+program Nemo_Adv_X
 
-    use omp_lib
-    use iso_fortran_env
+    use Nemo_Adv_X_Mocks
 
-    call adv_x_mock &
-         ()      
+    IMPLICIT none
 
-end program Nemo_adv_x_mock
+    INTEGER :: &
+        dim, &      ! Dimension of the arrays.
+        jpi, jpj    ! Dimensions of the workspaces.
+
+    REAL(wp) :: &
+        pdt, &      ! The time step
+        pcrh        ! Call adv_x then adv_y (=1) or the opposite (=0)
+    
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: &
+        put, &      ! i-direction ice velocity at U-point [m/s]
+        e1e2t       ! associated metrics at t-point
+    
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
+        psm, &              ! area
+        ps0, &              ! field to be advected
+        psx, psy, &         ! 1st moments 
+        psxx, psyy, psxy, & ! 2nd moments
+        tmask               ! land/ocean mask at T-pts
+
+    ! Setup the dimensions of the arrays and workspaces.
+    dim = 5
+    jpi = 4
+    jpj = 4
+
+    ! Initialize variables required for running the mock code.
+    call initialize_adv_x &
+        (dim, jpi, jpj, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
+
+    ! Call sequential code.
+    call adv_x_mock_seq &
+        (jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)      
+
+end program Nemo_Adv_X
