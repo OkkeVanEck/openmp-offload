@@ -25,7 +25,7 @@ contains
         !!  
         !! ** purpose :   Initializes variables required for adv_x_mock.
         !!----------------------------------------------------------------------
-        INTEGER                                , INTENT(out) ::   dim               ! Dimension of the arrays.
+        INTEGER                                , INTENT(in)  ::   dim               ! Dimension of the arrays.
         INTEGER                                , INTENT(in)  ::   jpi, jpj          ! Dimension of the workspaces.
         REAL(wp)                               , INTENT(out) ::   pdt               ! the time step
         REAL(wp)                               , INTENT(out) ::   pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
@@ -88,23 +88,47 @@ contains
         call RANDOM_NUMBER(tmask)
 
 #ifdef DEBUG_ON
-    ! Print 2d matrices to test repeatability.
-    write (*,*) "initialize_adv_x: Arrays generation"
-    ! call print_real_2d_matrix(put, "put")
-    ! call print_real_2d_matrix(e1e2t, "e1e2t")
-    call print_real_3d_matrix(ps0, "ps0")
-    write (*,*) ""
-#endif
-
-#ifdef DEBUG_ON
     write (*,*) "OUT: initialize_adv_x"
     write (*,*) ""
 #endif
     END SUBROUTINE initialize_adv_x
 
 
+    SUBROUTINE reset_adv_x &
+            (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
+             init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
+        !!--------------------------------------------------------
+        !! - Routine: reset_adv_x
+        !! - Purpose: Reset the variables to their initial values.
+        !!--------------------------------------------------------
+        ! Variables to use as storage of initial values.
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: &
+            init_psm, &                         ! area
+            init_ps0, &                         ! field to be advected
+            init_psx, init_psy, &               ! 1st moments 
+            init_psxx, init_psyy, init_psxy     ! 2nd moments
+    
+        ! Variables to use during executions.
+        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: &
+            psm, &              ! area
+            ps0, &              ! field to be advected
+            psx, psy, &         ! 1st moments 
+            psxx, psyy, psxy ! 2nd moments
+     
+        psm = init_psm
+        ps0 = init_ps0
+        psx = init_psx
+        psxx = init_psxx
+        psy = init_psy
+        psyy = init_psyy
+        psxy = init_psxy
+
+    END SUBROUTINE reset_adv_x
+
+
     SUBROUTINE adv_x_mock_seq &
-            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
+            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
+             e1e2t, tmask)
         !!----------------------------------------------------------------------
         !!                **  routine adv_x  **
         !!  
@@ -346,6 +370,14 @@ program Nemo_Adv_X
         put, &      ! i-direction ice velocity at U-point [m/s]
         e1e2t       ! associated metrics at t-point
     
+    ! Allocate variables to use as storage of initial values.
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
+        init_psm, &                         ! area
+        init_ps0, &                         ! field to be advected
+        init_psx, init_psy, &               ! 1st moments 
+        init_psxx, init_psyy, init_psxy     ! 2nd moments
+
+    ! Allocate variables to use during executions.
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
         psm, &              ! area
         ps0, &              ! field to be advected
@@ -365,27 +397,41 @@ program Nemo_Adv_X
 
     ! Initialize variables required for running the mock code.
     call initialize_adv_x &
-        (dim, jpi, jpj, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
+        (dim, jpi, jpj, pdt, put, pcrh, init_psm , init_ps0, init_psx, &
+         init_psxx, init_psy, init_psyy, init_psxy, e1e2t, tmask)
+
+    ! Copy initialized variables for the running the next code bit.
+    psm = init_psm
+    ps0 = init_ps0
+    psx = init_psx
+    psxx = init_psxx
+    psy = init_psy
+    psyy = init_psyy
+    psxy = init_psxy
 
 #ifdef DEBUG_ON
-    ! Print 2d matrices to test repeatability.
-    write (*,*) "main_program: after initialize_adv_x"
-    call print_real_2d_matrix(put, "put")
-    call print_real_2d_matrix(e1e2t, "e1e2t")
+    ! Print matrices to test repeatability.
+    write (*,*) "initialize_adv_x: Arrays generation"
+    call print_real_3d_matrix(ps0, "ps0")
     write (*,*) ""
 #endif
 
     ! Call sequential code.
     call adv_x_mock_seq &
-        (jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)     
-        
+        (jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, &
+         e1e2t, tmask)     
+
 #ifdef DEBUG_ON
-    ! Print 2d matrices to test repeatability.
+    ! Print matrices to test repeatability.
     write (*,*) "main_program: after adv_x_mock_seq"
-    call print_real_2d_matrix(put, "put")
-    call print_real_2d_matrix(e1e2t, "e1e2t")
+    call print_real_3d_matrix(ps0, "ps0")
     write (*,*) ""
 #endif
+
+    ! Reset variables for next run.
+    call reset_adv_x &
+        (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
+         init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."
