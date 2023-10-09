@@ -19,12 +19,12 @@ MODULE Nemo_Adv_X_Mocks
 contains 
 
     SUBROUTINE initialize_adv_x &
-            (dim, jpi, jpj, pdt, put , pcrh, psm , ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
-        !!----------------------------------------------------------------------
-        !!         **  routine     SUBROUTINE initialize_adv_x  **
-        !!  
-        !! ** purpose :   Initializes variables required for adv_x_mock.
-        !!----------------------------------------------------------------------
+            (dim, jpi, jpj, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, &
+             psxy, e1e2t, tmask)
+        !!----------------------------------------------------------
+        !! - Routine: initialize_adv_x
+        !! - Purpose: Initializes variables required for adv_x_mock.
+        !!----------------------------------------------------------
         INTEGER                                , INTENT(in)  ::   dim               ! Dimension of the arrays.
         INTEGER                                , INTENT(in)  ::   jpi, jpj          ! Dimension of the workspaces.
         REAL(wp)                               , INTENT(out) ::   pdt               ! the time step
@@ -129,12 +129,11 @@ contains
     SUBROUTINE adv_x_mock_seq &
             (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
              e1e2t, tmask)
-        !!----------------------------------------------------------------------
-        !!                **  routine adv_x  **
-        !!  
-        !! ** purpose :   Computes and adds the advection trend to sea-ice
+        !!------------------------------------------------------------
+        !! - Routine: adv_x_mock_seq
+        !! - Purpose: Computes and adds the advection trend to sea-ice
         !!                variable on x axis
-        !!----------------------------------------------------------------------
+        !!------------------------------------------------------------
         INTEGER                   , INTENT(in   ) ::   jpi, jpj           ! Dimension of the workspace.
         REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
         REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
