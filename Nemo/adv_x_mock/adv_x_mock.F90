@@ -7,11 +7,8 @@ MODULE Nemo_Adv_X_Helpers
     ! Set the working-precision to double precision.
     use, intrinsic :: iso_fortran_env, wp=>real64
 
-    ! Import helper functions.
-    use Nemo_Helpers
-
     implicit none 
-  
+    
     public :: &
         initialize_adv_x, &
         reset_adv_x, &
@@ -321,35 +318,35 @@ program Nemo_Adv_X
     call print_results_adv_x &
             ("sequential", .true., time_seq, 1.0_wp)
           
-!     !------------------------!
-!     !  Call data_beta code.  !
-!     !------------------------!
-!     time_start = omp_get_wtime()
-!     call adv_x_mock_data_beta &
-!             (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-!             e1e2t, tmask)
-!     time_exec = omp_get_wtime() - time_start
+    !------------------------!
+    !  Call data_beta code.  !
+    !------------------------!
+    time_start = omp_get_wtime()
+    call adv_x_mock_data_beta &
+            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
+            e1e2t, tmask)
+    time_exec = omp_get_wtime() - time_start
 
-! #ifdef DEBUG_ON
-!     ! Print matrices to test repeatability.
-!     write (*,*) "main_program: after validate_results_adv_x"
-!     call print_real_3d_matrix(ps0, "ps0")
-! #endif
+#ifdef DEBUG_ON
+    ! Print matrices to test repeatability.
+    write (*,*) "main_program: after validate_results_adv_x"
+    call print_real_3d_matrix(ps0, "ps0")
+#endif
 
-!     ! Validate results.
-!     call validate_results_adv_x &
-!         (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, &
-!          seq_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
-!          validation)
+    ! Validate results.
+    call validate_results_adv_x &
+        (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, &
+         seq_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
+         validation)
         
-!     ! Print results.
-!     call print_results_adv_x &
-!         ("data_beta", validation, time_exec, time_seq / time_exec)
+    ! Print results.
+    call print_results_adv_x &
+        ("data_beta", validation, time_exec, time_seq / time_exec)
 
-!     ! Reset variables for next execution.
-!     call reset_adv_x &
-!         (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
-!          init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
+    ! Reset variables for next execution.
+    call reset_adv_x &
+        (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
+         init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."
