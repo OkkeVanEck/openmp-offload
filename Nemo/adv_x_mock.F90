@@ -424,14 +424,21 @@ program Nemo_Adv_X
         put, &      ! i-direction ice velocity at U-point [m/s]
         e1e2t       ! associated metrics at t-point
     
-    ! Allocate variables to use as storage of initial values.
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
+    ! Allocate arrays used for the initial values.
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
         init_psm, &                         ! area
         init_ps0, &                         ! field to be advected
         init_psx, init_psy, &               ! 1st moments 
         init_psxx, init_psyy, init_psxy     ! 2nd moments
 
-    ! Allocate variables to use during executions.
+    ! Allocate arrays used for the sequential results.
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
+        seq_psm, &                      ! area
+        seq_ps0, &                      ! field to be advected
+        seq_psx, seq_psy, &             ! 1st moments 
+        seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+
+    ! Allocate arrays used for execution results.
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
         psm, &              ! area
         ps0, &              ! field to be advected
@@ -467,11 +474,6 @@ program Nemo_Adv_X
     psyy = init_psyy
     psxy = init_psxy
 
-    ! call validate_results_adv_x &
-    !     (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
-    !      init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
-    !      validation, validation_string)
-
 #ifdef DEBUG_ON
     ! Print matrices to test repeatability.
     write (*,*) "initialize_adv_x: Arrays generation"
@@ -491,10 +493,24 @@ program Nemo_Adv_X
     write (*,*) ""
 #endif
 
+    ! Store sequential results for comparisons.
+    seq_psm = psm
+    seq_ps0 = ps0
+    seq_psx = psx
+    seq_psxx = psxx
+    seq_psy = psy
+    seq_psyy = psyy
+    seq_psxy = psxy
+
     ! Reset variables for next run.
     call reset_adv_x &
         (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
          init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
+
+    ! call validate_results_adv_x &
+    !     (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
+    !      init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
+    !      validation, validation_string)
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."
