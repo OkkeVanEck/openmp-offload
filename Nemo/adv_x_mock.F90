@@ -766,16 +766,16 @@ program Nemo_Adv_X
          seq_psy, seq_psyy, seq_psxy, e1e2t, tmask)
     time_seq = omp_get_wtime() - time_start
 
-    ! Print sequential results.
-    call print_results_adv_x &
-            ("sequential", .true., time_seq, 1.0_wp)
-
 #ifdef DEBUG_ON
     ! Print matrices to test repeatability.
     write (*,*) "main_program: after adv_x_mock_seq"
     call print_real_3d_matrix(seq_ps0, "seq_ps0")
 #endif
 
+    ! Print sequential results.
+    call print_results_adv_x &
+            ("sequential", .true., time_seq, 1.0_wp)
+          
     !------------------------!
     !  Call data_beta code.  !
     !------------------------!
@@ -785,12 +785,18 @@ program Nemo_Adv_X
             e1e2t, tmask)
     time_exec = omp_get_wtime() - time_start
 
+#ifdef DEBUG_ON
+    ! Print matrices to test repeatability.
+    write (*,*) "main_program: after validate_results_adv_x"
+    call print_real_3d_matrix(ps0, "ps0")
+#endif
+
     ! Validate results.
     call validate_results_adv_x &
         (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, &
          seq_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
          validation)
-
+        
     ! Print results.
     call print_results_adv_x &
         ("data_beta", validation, time_exec, time_seq / time_exec)
