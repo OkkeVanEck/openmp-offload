@@ -14,6 +14,7 @@ MODULE Nemo_Adv_X_Mocks
   
     public :: &
         initialize_adv_x, &
+        validate_results_adv_x, &
         adv_x_mock_seq
 
 contains 
@@ -92,6 +93,60 @@ contains
     write (*,*) ""
 #endif
     END SUBROUTINE initialize_adv_x
+
+
+    SUBROUTINE validate_results_adv_x &
+        (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+         psm, ps0, psx, psxx, psy, psyy, psxy, &
+         validation, validation_string)
+        !!--------------------------------------------------------
+        !! - Routine: validate_results_adv_x
+        !! - Purpose: Check whether the arrays are the same.
+        !!--------------------------------------------------------
+        ! Variables to use as storage of sequential values.
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: &
+            seq_psm, &                      ! area
+            seq_ps0, &                      ! field to be advected
+            seq_psx, seq_psy, &             ! 1st moments 
+            seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+    
+        ! Variables to use during executions.
+        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: &
+            psm, &              ! area
+            ps0, &              ! field to be advected
+            psx, psy, &         ! 1st moments 
+            psxx, psyy, psxy ! 2nd moments
+
+        ! Validation boolean and string.
+        LOGICAL, INTENT(out) :: validation
+        CHARACTER(6), INTENT(out) :: validation_string
+        
+        ! Classic Fortran does NOT support lazy if-comparison, so..
+        IF (ANY(psm.ne.seq_psm)) then
+            validation = .false.
+        ELSEIF (ANY(ps0.ne.seq_ps0)) THEN
+            validation = .false.
+        ELSEIF (ANY(psx.ne.seq_psx)) THEN
+            validation = .false.
+        ELSEIF (ANY(psxx.ne.seq_psxx)) THEN
+            validation = .false.
+        ELSEIF (ANY(psy.ne.seq_psy)) THEN
+            validation = .false.
+        ELSEIF (ANY(psyy.ne.seq_psyy)) THEN
+            validation = .false.
+        ELSEIF (ANY(psxy.ne.seq_psxy)) THEN
+            validation = .false.
+        ELSE
+            validation = .true.
+        END IF
+
+        ! Convert the validation into a string used for printing.
+        IF (validation) THEN
+            validation_string = "PASSED"
+        ELSE
+            validation_string = "FAILED"
+        END IF
+    END SUBROUTINE validate_results_adv_x
 
 
     SUBROUTINE reset_adv_x &
@@ -384,6 +439,10 @@ program Nemo_Adv_X
         psxx, psyy, psxy, & ! 2nd moments
         tmask               ! land/ocean mask at T-pts
 
+    ! Validation boolean and string.
+    LOGICAL :: validation
+    CHARACTER(6) :: validation_string
+
 #ifdef DEBUG_ON
     write (*,*) ""
     write (*,*) "IN: main_program."
@@ -407,6 +466,11 @@ program Nemo_Adv_X
     psy = init_psy
     psyy = init_psyy
     psxy = init_psxy
+
+    ! call validate_results_adv_x &
+    !     (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
+    !      init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
+    !      validation, validation_string)
 
 #ifdef DEBUG_ON
     ! Print matrices to test repeatability.
