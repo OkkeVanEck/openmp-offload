@@ -350,13 +350,9 @@ program Nemo_Adv_X
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psx, init_psy                  ! 1st moments 
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psxx, init_psyy, init_psxy     ! 2nd moments
 
-    ! Validation boolean.
-    LOGICAL :: validation
-
     ! Used for timing executions.
     REAL(wp) :: &
         time_start, &   ! Registers start time.
-        time_exec, &    ! Registers end time - start time.
         time_seq        ! Stores sequential time.
 
     ! Function pointer used for executing the code.
