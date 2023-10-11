@@ -21,17 +21,16 @@ contains
     !! - Purpose: Parallelized version from the adv_x_mock_data branch
     !! - Source: https://earth.bsc.es/gitlab/amedvede/nemogcm_v40/-/blob/gpu_icedyn_adv_xy_data/src/ICE/icedyn_adv_pra.F90
     !!---------------------------------------------------------------------
-    INTEGER                   , INTENT(in   ) ::   jpi, jpj           ! Dimension of the workspace.
-    REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
-    REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
-    REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   put                ! i-direction ice velocity at U-point [m/s]
-    REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psm                ! area
-    REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   ps0                ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psx , psy          ! 1st moments 
-    REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
-    REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   e1e2t              ! associated metrics at t-point
-    REAL(wp), DIMENSION(:,:,:), INTENT(in   ) ::   tmask              ! land/ocean mask at T-pts
-
+    INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
+    REAL(wp)                  , INTENT(in) :: pdt                ! the time step
+    REAL(wp)                  , INTENT(in) :: pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
+    REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put                ! i-direction ice velocity at U-point [m/s]
+    REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) :: e1e2t              ! associated metrics at t-point
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: tmask              ! land/ocean mask at T-pts
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: psm                ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: ps0                ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: psx , psy          ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: psxx, psyy, psxy   ! 2nd moments
     !! 
     INTEGER  ::   ji, jj, jl, jcat, nn                 ! dummy loop indices
     INTEGER  ::   jjmin, jjmax                         ! dummy loop indices

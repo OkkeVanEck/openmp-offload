@@ -101,19 +101,18 @@ contains
         !! - Purpose: Reset the variables to their initial values.
         !!--------------------------------------------------------
         ! Variables to use as storage of initial values.
-        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: &
-            init_psm, &                         ! area
-            init_ps0, &                         ! field to be advected
-            init_psx, init_psy, &               ! 1st moments 
-            init_psxx, init_psyy, init_psxy     ! 2nd moments
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: init_psm                            ! area
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: init_ps0                            ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: init_psx, init_psy                  ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: init_psxx, init_psyy, init_psxy     ! 2nd moments
+    
 
         ! Variables to use during executions.
-        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: &
-            psm, &              ! area
-            ps0, &              ! field to be advected
-            psx, psy, &         ! 1st moments 
-            psxx, psyy, psxy ! 2nd moments
-    
+        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: psm                ! area
+        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: ps0                ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: psx , psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: psxx, psyy, psxy   ! 2nd moments
+        
         psm = init_psm
         ps0 = init_ps0
         psx = init_psx
@@ -134,19 +133,17 @@ contains
         !! - Purpose: Check whether the arrays are the same.
         !!--------------------------------------------------------
         ! Variables to use as storage of sequential values.
-        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: &
-            seq_psm, &                      ! area
-            seq_ps0, &                      ! field to be advected
-            seq_psx, seq_psy, &             ! 1st moments 
-            seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
-    
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: seq_psm                         ! area
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: seq_ps0                         ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: seq_psx, seq_psy                ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), INTENT(in) :: seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+     
         ! Variables to use during executions.
-        REAL(wp), DIMENSION(:,:,:), INTENT(out) :: &
-            psm, &              ! area
-            ps0, &              ! field to be advected
-            psx, psy, &         ! 1st moments 
-            psxx, psyy, psxy ! 2nd moments
-
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psm                ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: ps0                ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psx , psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psxx, psyy, psxy   ! 2nd moments
+ 
         ! Validation boolean.
         LOGICAL, INTENT(out) :: validation
         
@@ -218,7 +215,7 @@ MODULE Nemo_Adv_X_Run
         run_mock
 
     ABSTRACT INTERFACE
-        FUNCTION adv_x_func &
+        SUBROUTINE adv_x_func &
                 (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, &
                  psxy, e1e2t, tmask)
             IMPORT :: wp
@@ -233,7 +230,7 @@ MODULE Nemo_Adv_X_Run
             REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
             REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in   ) ::   e1e2t              ! associated metrics at t-point
             REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in   ) ::   tmask              ! land/ocean mask at T-pts        
-        END FUNCTION adv_x_func
+        END SUBROUTINE adv_x_func
     END INTERFACE
   
   CONTAINS
@@ -250,30 +247,30 @@ MODULE Nemo_Adv_X_Run
         REAL(wp), INTENT(in) :: time_seq
 
         ! Variables required for runs.
-        INTEGER                   , INTENT(in) ::   jpi, jpj    ! Dimension of the workspace.
-        REAL(wp)                  , INTENT(in) ::   pdt         ! the time step
-        REAL(wp)                  , INTENT(in) ::   pcrh        ! call adv_x then adv_y (=1) or the opposite (=0)
-        REAL(wp), DIMENSION(:,:)  , INTENT(in) ::   put         ! i-direction ice velocity at U-point [m/s]
-        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) ::   e1e2t       ! associated metrics at t-point
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   tmask       ! land/ocean mask at T-pts    
+        INTEGER                   , INTENT(in) :: jpi, jpj    ! Dimension of the workspace.
+        REAL(wp)                  , INTENT(in) :: pdt         ! the time step
+        REAL(wp)                  , INTENT(in) :: pcrh        ! call adv_x then adv_y (=1) or the opposite (=0)
+        REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put         ! i-direction ice velocity at U-point [m/s]
+        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) :: e1e2t       ! associated metrics at t-point
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: tmask       ! land/ocean mask at T-pts    
         
         ! Variables to use during executions.
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psm                ! area
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   ps0                ! field to be advected
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psx , psy          ! 1st moments 
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: psm                ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: ps0                ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: psx , psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: psxx, psyy, psxy   ! 2nd moments
 
         ! Variables to use as storage of sequential values.
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_psm                         ! area
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_ps0                         ! field to be advected
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_psx, seq_psy                ! 1st moments 
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: seq_psm                         ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: seq_ps0                         ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: seq_psx, seq_psy                ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
 
         ! Variables to use as storage of initial values.
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_psm                            ! area
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_ps0                            ! field to be advected
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_psx, init_psy                  ! 1st moments 
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_psxx, init_psyy, init_psxy     ! 2nd moments
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: init_psm                            ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: init_ps0                            ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: init_psx, init_psy                  ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: init_psxx, init_psyy, init_psxy     ! 2nd moments
         
         ! Used for timing executions.
         REAL(wp) :: &
@@ -328,30 +325,30 @@ program Nemo_Adv_X
 
     IMPLICIT none
 
-    INTEGER                   , INTENT(in) ::   jpi, jpj, dim   ! Dimension of the workspace.
-    REAL(wp)                  , INTENT(in) ::   pdt             ! the time step
-    REAL(wp)                  , INTENT(in) ::   pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
-    REAL(wp), DIMENSION(:,:)  , INTENT(in) ::   put             ! i-direction ice velocity at U-point [m/s]
-    REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) ::   e1e2t           ! associated metrics at t-point
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   tmask           ! land/ocean mask at T-pts    
+    INTEGER :: jpi, jpj, dim    ! Dimension of the workspace.
+    REAL(wp) :: pdt             ! the time step
+    REAL(wp) :: pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: put      ! i-direction ice velocity at U-point [m/s]
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: e1e2t    ! associated metrics at t-point
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: tmask  ! land/ocean mask at T-pts    
 
     ! Variables to use during executions.
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   psm                ! area
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   ps0                ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   psx , psy          ! 1st moments 
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   psxx, psyy, psxy   ! 2nd moments
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psm                ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: ps0                ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psx , psy          ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psxx, psyy, psxy   ! 2nd moments
 
     ! Variables to use as storage of sequential values.
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_psm                         ! area
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_ps0                         ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_psx, seq_psy                ! 1st moments 
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psm                         ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_ps0                         ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psx, seq_psy                ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
 
     ! Variables to use as storage of initial values.
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_psm                            ! area
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_ps0                            ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_psx, init_psy                  ! 1st moments 
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_psxx, init_psyy, init_psxy     ! 2nd moments
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psm                            ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_ps0                            ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psx, init_psy                  ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psxx, init_psyy, init_psxy     ! 2nd moments
 
     ! Validation boolean.
     LOGICAL :: validation
