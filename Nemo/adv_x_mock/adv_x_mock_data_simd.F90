@@ -29,6 +29,8 @@ contains
     REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   ps0                ! field to be advected
     REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psx , psy          ! 1st moments 
     REAL(wp), DIMENSION(:,:,:), INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
+    REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   e1e2t              ! associated metrics at t-point
+    REAL(wp), DIMENSION(:,:,:), INTENT(in   ) ::   tmask              ! land/ocean mask at T-pts
     !! 
     INTEGER  ::   ji, jj, jl, jcat                     ! dummy loop indices
     INTEGER  ::   jjmin, jjmax                         ! dummy loop indices
@@ -40,10 +42,6 @@ contains
     REAL(wp), DIMENSION(jpi,jpj) ::   zf0 , zfx  , zfy   , zbet   ! 2D workspace
     REAL(wp), DIMENSION(jpi,jpj) ::   zfm , zfxx , zfyy  , zfxy   !  -      -
     REAL(wp), DIMENSION(jpi,jpj) ::   zalg, zalg1, zalg1q         !  -      -
-
-    REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) ::   e1e2t   ! associated metrics at t-point
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   tmask   ! land/ocean mask at T-pts
-
 
     ! Local version of used parameters.
     REAL(wp), PARAMETER ::   epsi20 = 1.e-20_wp     ! small number 

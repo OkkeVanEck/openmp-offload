@@ -205,9 +205,121 @@ contains
 END MODULE Nemo_Adv_X_Helpers
 
 
+MODULE Nemo_Adv_X_Run
+
+    use Nemo_Adv_X_Helpers
+
+    ! Set the working-precision to double precision.
+    use, intrinsic :: iso_fortran_env, wp=>real64
+
+    implicit none 
+    
+    public :: &
+        run_mock
+
+    ABSTRACT INTERFACE
+        FUNCTION adv_x_func &
+                (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, &
+                 psxy, e1e2t, tmask)
+            IMPORT :: wp
+
+            INTEGER                   , INTENT(in   ) ::   jpi, jpj           ! Dimension of the workspace.
+            REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
+            REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
+            REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   put                ! i-direction ice velocity at U-point [m/s]
+            REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psm                ! area
+            REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   ps0                ! field to be advected
+            REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psx , psy          ! 1st moments 
+            REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
+            REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in   ) ::   e1e2t              ! associated metrics at t-point
+            REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in   ) ::   tmask              ! land/ocean mask at T-pts        
+        END FUNCTION adv_x_func
+    END INTERFACE
+  
+  CONTAINS
+  
+    SUBROUTINE run_mock(mock_func, func_name, time_seq, &
+                        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+                        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+                        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+        ! Function specific variables.
+        PROCEDURE(adv_x_func), POINTER, INTENT(in) :: mock_func
+        CHARACTER(*), INTENT(in) :: func_name
+
+        ! Stores sequential time.
+        REAL(wp), INTENT(in) :: time_seq
+
+        ! Variables required for runs.
+        INTEGER                   , INTENT(in) ::   jpi, jpj    ! Dimension of the workspace.
+        REAL(wp)                  , INTENT(in) ::   pdt         ! the time step
+        REAL(wp)                  , INTENT(in) ::   pcrh        ! call adv_x then adv_y (=1) or the opposite (=0)
+        REAL(wp), DIMENSION(:,:)  , INTENT(in) ::   put         ! i-direction ice velocity at U-point [m/s]
+        REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) ::   e1e2t       ! associated metrics at t-point
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   tmask       ! land/ocean mask at T-pts    
+        
+        ! Variables to use during executions.
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psm                ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   ps0                ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psx , psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) ::   psxx, psyy, psxy   ! 2nd moments
+
+        ! Variables to use as storage of sequential values.
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_psm                         ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_ps0                         ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_psx, seq_psy                ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+
+        ! Variables to use as storage of initial values.
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_psm                            ! area
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_ps0                            ! field to be advected
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_psx, init_psy                  ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   init_psxx, init_psyy, init_psxy     ! 2nd moments
+        
+        ! Used for timing executions.
+        REAL(wp) :: &
+            time_start, &   ! Registers start time.
+            time_exec       ! Registers end time - start time.
+
+        ! Validation boolean.
+        LOGICAL :: validation
+
+        ! Time the execution of the given function.
+        time_start = omp_get_wtime()
+        call mock_func &
+            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
+             e1e2t, tmask)
+        time_exec = omp_get_wtime() - time_start
+
+#ifdef DEBUG_ON
+    ! Print matrices to test repeatability.
+    write (*,*) "main_program: after validate_results_adv_x"
+    call print_real_3d_matrix(ps0, "ps0")
+#endif
+
+        ! Validate results.
+        call validate_results_adv_x &
+            (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, &
+            seq_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
+            validation)
+
+        ! Print results.
+        call print_results_adv_x &
+            (func_name, validation, time_exec, time_seq / time_exec)
+
+        ! Reset variables for next execution.
+        call reset_adv_x &
+            (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
+            init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
+    END SUBROUTINE run_mock
+  
+END MODULE Nemo_Adv_X_Run
+
+
 program Nemo_Adv_X
 
     use Nemo_Adv_X_Helpers
+    use Nemo_Adv_X_Run
+
     use Nemo_Adv_X_Seq
     use Nemo_Adv_X_Data
     use Nemo_Adv_X_Data_Beta
@@ -216,39 +328,30 @@ program Nemo_Adv_X
 
     IMPLICIT none
 
-    INTEGER :: &
-        dim, &      ! Dimension of the arrays.
-        jpi, jpj    ! Dimensions of the workspaces.
+    INTEGER                   , INTENT(in) ::   jpi, jpj, dim   ! Dimension of the workspace.
+    REAL(wp)                  , INTENT(in) ::   pdt             ! the time step
+    REAL(wp)                  , INTENT(in) ::   pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
+    REAL(wp), DIMENSION(:,:)  , INTENT(in) ::   put             ! i-direction ice velocity at U-point [m/s]
+    REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) ::   e1e2t           ! associated metrics at t-point
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) ::   tmask           ! land/ocean mask at T-pts    
 
-    REAL(wp) :: &
-        pdt, &      ! The time step
-        pcrh        ! Call adv_x then adv_y (=1) or the opposite (=0)
-    
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: &
-        put, &      ! i-direction ice velocity at U-point [m/s]
-        e1e2t       ! associated metrics at t-point
-    
-    ! Allocate arrays used for the initial values.
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
-        init_psm, &                         ! area
-        init_ps0, &                         ! field to be advected
-        init_psx, init_psy, &               ! 1st moments 
-        init_psxx, init_psyy, init_psxy     ! 2nd moments
+    ! Variables to use during executions.
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   psm                ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   ps0                ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   psx , psy          ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   psxx, psyy, psxy   ! 2nd moments
 
-    ! Allocate arrays used for the sequential results.
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
-        seq_psm, &                      ! area
-        seq_ps0, &                      ! field to be advected
-        seq_psx, seq_psy, &             ! 1st moments 
-        seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
+    ! Variables to use as storage of sequential values.
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_psm                         ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_ps0                         ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_psx, seq_psy                ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
 
-    ! Allocate arrays used for execution results.
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: &
-        psm, &              ! area
-        ps0, &              ! field to be advected
-        psx, psy, &         ! 1st moments 
-        psxx, psyy, psxy, & ! 2nd moments
-        tmask               ! land/ocean mask at T-pts
+    ! Variables to use as storage of initial values.
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_psm                            ! area
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_ps0                            ! field to be advected
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_psx, init_psy                  ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE ::   init_psxx, init_psyy, init_psxy     ! 2nd moments
 
     ! Validation boolean.
     LOGICAL :: validation
@@ -259,6 +362,8 @@ program Nemo_Adv_X
         time_exec, &    ! Registers end time - start time.
         time_seq        ! Stores sequential time.
 
+    ! Function pointer used for executing the code.
+    PROCEDURE(adv_x_func), POINTER :: mock_func
 
 #ifdef DEBUG_ON
     write (*,*) ""
@@ -321,32 +426,11 @@ program Nemo_Adv_X
     !------------------------!
     !  Call data_beta code.  !
     !------------------------!
-    time_start = omp_get_wtime()
-    call adv_x_mock_data_beta &
-            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-            e1e2t, tmask)
-    time_exec = omp_get_wtime() - time_start
-
-#ifdef DEBUG_ON
-    ! Print matrices to test repeatability.
-    write (*,*) "main_program: after validate_results_adv_x"
-    call print_real_3d_matrix(ps0, "ps0")
-#endif
-
-    ! Validate results.
-    call validate_results_adv_x &
-        (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, &
-         seq_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
-         validation)
-        
-    ! Print results.
-    call print_results_adv_x &
-        ("data_beta", validation, time_exec, time_seq / time_exec)
-
-    ! Reset variables for next execution.
-    call reset_adv_x &
-        (init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, &
-         init_psxy, psm, ps0, psx, psxx, psy, psyy, psxy)
+    mock_func => adv_x_mock_data_beta
+    call run_mock(mock_func, "data_beta", time_seq, &
+        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."
