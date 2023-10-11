@@ -18,14 +18,12 @@ MODULE Nemo_Adv_X_Helpers
 contains 
 
     SUBROUTINE initialize_adv_x &
-            (dim, jpi, jpj, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, &
-             psxy, e1e2t, tmask)
+            (JPI, JPJ, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
         !!----------------------------------------------------------
         !! - Routine: initialize_adv_x
         !! - Purpose: Initializes variables required for adv_x_mock.
         !!----------------------------------------------------------
-        INTEGER                                , INTENT(in)  ::   dim               ! Dimension of the arrays.
-        INTEGER                                , INTENT(in)  ::   jpi, jpj          ! Dimension of the workspaces.
+        INTEGER                                , INTENT(out) ::   JPI, JPJ          ! Dimensions of the workspace.
         REAL(wp)                               , INTENT(out) ::   pdt               ! the time step
         REAL(wp)                               , INTENT(out) ::   pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
         REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out) ::   put               ! i-direction ice velocity at U-point [m/s]
@@ -40,6 +38,11 @@ contains
         INTEGER :: n
         INTEGER, ALLOCATABLE :: seed(:)
 
+        ! Variables that define the dimensions of the arrays.
+        INTEGER :: &
+            NCATS, &    ! Number of categories, functioning as dim 3.
+            TMASK3      ! Uncertain of the origin, but value comes from logs.
+
 #ifdef DEBUG_ON
     write (*,*) ""
     write (*,*) "IN: initialize_adv_x"
@@ -49,21 +52,27 @@ contains
         pdt = 1
         pcrh = 1
 
+        ! Set dimension constants according to CRAY_ACC_DEBUG=3 log.
+        JPI = 92
+        JPJ = 167
+        NCATS = 5
+        TMASK3 = 75     
+
         ! Allocate data for the variables.
         ! Dimensions are extracted from a nemo run using CRAY_ACC_DEBUG=3.
 #ifdef DEBUG_ON
     write (*,*) "initialize_adv_x: Allocating data.."
 #endif
-        allocate ( put ( dim, dim ) )
-        allocate ( psm ( dim, dim, dim) )
-        allocate ( ps0 ( dim, dim, dim) )
-        allocate ( psx ( dim, dim, dim) )
-        allocate ( psy ( dim, dim, dim) )
-        allocate ( psxx ( dim, dim, dim) )
-        allocate ( psyy ( dim, dim, dim) )
-        allocate ( psxy ( dim, dim, dim) )
-        allocate ( e1e2t (92, 167) )
-        allocate ( tmask ( 92, 167, 75) )
+        allocate ( put ( JPI, JPJ ) )
+        allocate ( psm ( JPI, JPJ, NCATS) )
+        allocate ( ps0 ( JPI, JPJ, NCATS) )
+        allocate ( psx ( JPI, JPJ, NCATS) )
+        allocate ( psy ( JPI, JPJ, NCATS) )
+        allocate ( psxx ( JPI, JPJ, NCATS) )
+        allocate ( psyy ( JPI, JPJ, NCATS) )
+        allocate ( psxy ( JPI, JPJ, NCATS) )
+        allocate ( e1e2t (JPI, JPJ) )
+        allocate ( tmask ( JPI, JPJ, TMASK3) )
 
         ! Set internal RNG to be repeatable.
         call random_seed(size=n)
@@ -327,7 +336,6 @@ program Nemo_Adv_X
 
     IMPLICIT none
 
-    INTEGER :: jpi, jpj, dim    ! Dimension of the workspace.
     REAL(wp) :: pdt             ! the time step
     REAL(wp) :: pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: put      ! i-direction ice velocity at U-point [m/s]
@@ -360,20 +368,19 @@ program Nemo_Adv_X
     ! Function pointer used for executing the code.
     PROCEDURE(adv_x_func), POINTER :: mock_func
 
+    ! Variables that indicate workspace dimensions.
+    INTEGER :: JPI, JPJ
+
 #ifdef DEBUG_ON
     write (*,*) ""
     write (*,*) "IN: main_program."
 #endif
 
-    ! Setup the dimensions of the arrays and workspaces.
-    dim = 5
-    jpi = 4
-    jpj = 4
-
     ! Initialize the "init_" variables required for running the mock code.
     call initialize_adv_x &
-        (dim, jpi, jpj, pdt, put, pcrh, init_psm , init_ps0, init_psx, &
-         init_psxx, init_psy, init_psyy, init_psxy, e1e2t, tmask)
+        (JPI, JPJ, &
+         pdt, put, pcrh, init_psm , init_ps0, init_psx, init_psxx, init_psy, &
+         init_psyy, init_psxy, e1e2t, tmask)
 
     ! Copy initialized variables for running the sequential experiment.
     seq_psm = init_psm
@@ -404,7 +411,7 @@ program Nemo_Adv_X
     !-------------------------!
     time_start = omp_get_wtime()
     call adv_x_mock_seq &
-        (jpi, jpj, pdt, put , pcrh, seq_psm , seq_ps0, seq_psx, seq_psxx, &
+        (JPI, JPJ, pdt, put , pcrh, seq_psm , seq_ps0, seq_psx, seq_psxx, &
          seq_psy, seq_psyy, seq_psxy, e1e2t, tmask)
     time_seq = omp_get_wtime() - time_start
 
@@ -423,7 +430,7 @@ program Nemo_Adv_X
     !-------------------!
     mock_func => adv_x_mock_data
     call run_mock(mock_func, "data", time_seq, &
-        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
@@ -432,7 +439,7 @@ program Nemo_Adv_X
     !------------------------!
     mock_func => adv_x_mock_data_simd
     call run_mock(mock_func, "data_simd", time_seq, &
-        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
@@ -441,7 +448,7 @@ program Nemo_Adv_X
     !------------------------!
     mock_func => adv_x_mock_data_beta
     call run_mock(mock_func, "data_beta", time_seq, &
-        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
