@@ -50,6 +50,7 @@ contains
         pcrh = 1
 
         ! Allocate data for the variables.
+        ! Dimensions are extracted from a nemo run using CRAY_ACC_DEBUG=3.
 #ifdef DEBUG_ON
     write (*,*) "initialize_adv_x: Allocating data.."
 #endif
@@ -61,8 +62,8 @@ contains
         allocate ( psxx ( dim, dim, dim) )
         allocate ( psyy ( dim, dim, dim) )
         allocate ( psxy ( dim, dim, dim) )
-        allocate ( e1e2t (jpi, jpj) )
-        allocate ( tmask ( dim, dim, dim) )
+        allocate ( e1e2t (92, 167) )
+        allocate ( tmask ( 92, 167, 75) )
 
         ! Set internal RNG to be repeatable.
         call random_seed(size=n)
@@ -313,10 +314,11 @@ END MODULE Nemo_Adv_X_Run
 
 
 program Nemo_Adv_X
-
+    ! Local imports.
     use Nemo_Adv_X_Helpers
     use Nemo_Adv_X_Run
 
+    ! External imports.
     use Nemo_Adv_X_Seq
     use Nemo_Adv_X_Data
     use Nemo_Adv_X_Data_Beta
@@ -415,7 +417,25 @@ program Nemo_Adv_X
     ! Print sequential results.
     call print_results_adv_x &
             ("sequential", .true., time_seq, 1.0_wp)
-          
+
+    !-------------------!
+    !  Call data code.  !
+    !-------------------!
+    mock_func => adv_x_mock_data
+    call run_mock(mock_func, "data", time_seq, &
+        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+
+    !------------------------!
+    !  Call data_simd code.  !
+    !------------------------!
+    mock_func => adv_x_mock_data_simd
+    call run_mock(mock_func, "data_simd", time_seq, &
+        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+
     !------------------------!
     !  Call data_beta code.  !
     !------------------------!
@@ -423,7 +443,7 @@ program Nemo_Adv_X
     call run_mock(mock_func, "data_beta", time_seq, &
         jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."
