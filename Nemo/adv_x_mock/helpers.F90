@@ -8,7 +8,9 @@ MODULE Nemo_Helpers
     public :: &
         print_real_2d_matrix, &
         print_real_3d_matrix, &
-        matrix_equality_real
+        matrix_equality_real, &
+        matrix_diff_real, &
+        convert_logical
 
 contains
 
@@ -66,11 +68,34 @@ contains
         REAL(wp), DIMENSION(:,:,:), INTENT(in)  :: m1, m2
 
         IF (ANY((abs(m1-m2) > epsilon(m1(1,1,1))))) THEN
-            equals = .true.
-        ELSE
             equals = .false.
+        ELSE
+            equals = .true.
         END IF
     END FUNCTION matrix_equality_real
 
+
+    REAL(wp) FUNCTION matrix_diff_real(m1, m2) result(diff)
+        !!-------------------------------------------------------
+        !! - Routine: matrix_diff_real
+        !! - Purpose: Set 'diff' according to matrix differences.
+        !!-------------------------------------------------------
+        REAL(wp), DIMENSION(:,:,:), INTENT(in)  :: m1, m2
+        diff = maxval(abs((m1 - m2) / m2))
+    END FUNCTION matrix_diff_real
+
+
+    CHARACTER(7) FUNCTION convert_logical(value) result(string_value)
+        !!------------------------------------------------------
+        !! - Routine: convert_logical
+        !! - Purpose: Converts a logical value to string format.
+        !!------------------------------------------------------
+        LOGICAL, INTENT(in) :: value
+        IF (value) THEN
+            string_value = "PASSED"
+        ELSE
+            string_value = "FAILED"
+        END IF
+    END FUNCTION convert_logical
 
 END MODULE Nemo_Helpers

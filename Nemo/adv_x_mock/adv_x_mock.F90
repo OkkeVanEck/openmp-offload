@@ -138,7 +138,9 @@ contains
     SUBROUTINE validate_results_adv_x &
         (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
          psm, ps0, psx, psxx, psy, psyy, psxy, &
-         validation)
+         psm_val, ps0_val, psx_val, psxx_val, psy_val, psyy_val, psxy_val, &
+         psm_err, ps0_err, psx_err, psxx_err, psy_err, psyy_err, psxy_err, &
+         validation, error)
         !!--------------------------------------------------------
         !! - Routine: validate_results_adv_x
         !! - Purpose: Check whether the arrays are the same.
@@ -152,61 +154,153 @@ contains
         ! Variables to use during executions.
         REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psm                ! area
         REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: ps0                ! field to be advected
-        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psx , psy          ! 1st moments 
+        REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psx, psy          ! 1st moments 
         REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: psxx, psyy, psxy   ! 2nd moments
  
-        ! Validation boolean.
+        ! Validation booleans per matrix.
+        LOGICAL, INTENT(out) :: psm_val                         ! area
+        LOGICAL, INTENT(out) :: ps0_val                         ! field to be advected
+        LOGICAL, INTENT(out) :: psx_val, psy_val                ! 1st moments 
+        LOGICAL, INTENT(out) :: psxx_val, psyy_val, psxy_val    ! 2nd moments
+
+        ! Error values per matrix.
+        REAL(wp), INTENT(out) :: psm_err                        ! area
+        REAL(wp), INTENT(out) :: ps0_err                        ! field to be advected
+        REAL(wp), INTENT(out) :: psx_err, psy_err               ! 1st moments 
+        REAL(wp), INTENT(out) :: psxx_err, psyy_err, psxy_err   ! 2nd moments
+
+        ! Global validation boolean and error real.
         LOGICAL, INTENT(out) :: validation
-        
-        ! Classic Fortran does NOT support lazy if-comparison..
+        REAL(wp), INTENT(out) :: error
+
+        ! Set validation and error per matrix.
         IF (matrix_equality_real(psm, seq_psm)) THEN
-            validation = .false.
-        ELSEIF (matrix_equality_real(ps0, seq_ps0)) THEN
-            validation = .false.
-        ELSEIF (matrix_equality_real(psx, seq_psx)) THEN
-            validation = .false.
-        ELSEIF (matrix_equality_real(psxx, seq_psxx)) THEN
-            validation = .false.
-        ELSEIF (matrix_equality_real(psy, seq_psy)) THEN
-            validation = .false.
-        ELSEIF (matrix_equality_real(psyy, seq_psyy)) THEN
-            validation = .false.
-        ELSEIF (matrix_equality_real(psxy, seq_psxy)) THEN
-            validation = .false.
+            psm_val = .true.
         ELSE
-            validation = .true.
+            psm_val = .false.
+        END IF
+
+        IF (matrix_equality_real(ps0, seq_ps0)) THEN
+            ps0_val = .true.
+        ELSE
+            ps0_val = .false.
+        END IF
+
+        IF (matrix_equality_real(psx, seq_psx)) THEN
+            psx_val = .true.
+        ELSE
+            psx_val = .false.
+        END IF
+
+        IF (matrix_equality_real(psxx, seq_psxx)) THEN
+            psxx_val = .true.
+        ELSE
+            psxx_val = .false.
+        END IF
+
+        IF (matrix_equality_real(psy, seq_psy)) THEN
+            psy_val = .true.
+        ELSE
+            psy_val = .false.
+        END IF
+
+        IF (matrix_equality_real(psyy, seq_psyy)) THEN
+            psyy_val = .true.
+        ELSE
+            psyy_val = .false.
+        END IF
+
+        IF (matrix_equality_real(psxy, seq_psxy)) THEN
+            psxy_val = .true.
+        ELSE
+            psxy_val = .false.
         END IF        
+
+        ! Compute error values.
+        psm_err = matrix_diff_real(psm, seq_psm)
+        ps0_err = matrix_diff_real(ps0, seq_ps0)
+        psx_err = matrix_diff_real(psx, seq_psx)
+        psxx_err = matrix_diff_real(psxx, seq_psxx)
+        psy_err = matrix_diff_real(psy, seq_psy)
+        psyy_err = matrix_diff_real(psyy, seq_psyy)
+        psxy_err = matrix_diff_real(psxy, seq_psxy)
+
+        ! Update global values.
+        validation = psm_val .and. ps0_val .and. psx_val .and. psxx_val .and. &
+            psy_val .and. psyy_val .and. psxy_val
+        error = psm_err + ps0_err + psx_err + psxx_err + psy_err + psyy_err + psxy_err
     END SUBROUTINE validate_results_adv_x
 
 
     SUBROUTINE print_results_adv_x &
-            (func_name, validation, timing, speedup)
+            (func_name, validation, error, timing, speedup, &
+            psm_val, ps0_val, psx_val, psxx_val, psy_val, psyy_val, psxy_val, &
+            psm_err, ps0_err, psx_err, psxx_err, psy_err, psyy_err, psxy_err)
         !!-----------------------------------------------------------
         !! - Routine: print_results_adv_x
         !! - Purpose: Print a results overview of a given experiment.
         !!-----------------------------------------------------------
         CHARACTER(*), INTENT(in) :: func_name   ! Evaluated function.
-        LOGICAL, INTENT(in) :: validation       ! Validation boolean.
         REAL(wp), INTENT(in) :: &
             timing, &                           ! Total runtime.
             speedup                             ! Acquired speedup.
 
-        ! Local validation string conversion for printing.
+        ! Validation booleans per matrix.
+        LOGICAL, INTENT(in) :: psm_val                         ! area
+        LOGICAL, INTENT(in) :: ps0_val                         ! field to be advected
+        LOGICAL, INTENT(in) :: psx_val, psy_val                ! 1st moments 
+        LOGICAL, INTENT(in) :: psxx_val, psyy_val, psxy_val    ! 2nd moments
+
+        ! Error values per matrix.
+        REAL(wp), INTENT(in) :: psm_err                        ! area
+        REAL(wp), INTENT(in) :: ps0_err                        ! field to be advected
+        REAL(wp), INTENT(in) :: psx_err, psy_err               ! 1st moments 
+        REAL(wp), INTENT(in) :: psxx_err, psyy_err, psxy_err   ! 2nd moments
+
+        ! Global validation boolean and error real.
+        LOGICAL, INTENT(in) :: validation
+        REAL(wp), INTENT(in) :: error
+
+        ! Local string conversion for printing logical values.
         CHARACTER(7) :: validation_string
+        CHARACTER(7) :: psm_val_str                                 ! area
+        CHARACTER(7) :: ps0_val_str                                 ! field to be advected
+        CHARACTER(7) :: psx_val_str, psy_val_str                    ! 1st moments 
+        CHARACTER(7) :: psxx_val_str, psyy_val_str, psxy_val_str    ! 2nd moments
 
         ! Convert the validation into a string used for printing.
-        IF (validation) THEN
-            validation_string = "PASSED"
-        ELSE
-            validation_string = "FAILED"
-        END IF
+        validation_string = convert_logical(validation)
+        psm_val_str = convert_logical(psm_val)
+        ps0_val_str = convert_logical(ps0_val)
+        psx_val_str = convert_logical(psx_val)
+        psxx_val_str = convert_logical(psxx_val)
+        psy_val_str = convert_logical(psy_val)
+        psyy_val_str = convert_logical(psyy_val)
+        psxy_val_str = convert_logical(psxy_val)
 
         ! Print the overview for the given experiment.
-        print "( a9, a, a9 )", &
-        "======== ", trim ( func_name ), " ========="
+        print "( a8, a, a8 )", &
+        "======= ", trim ( func_name ), " ========"
         print "( a15, a8       )", "Validation    : ", validation_string
+        print "( a15, es10.3e2 )", "Error         : ", error
         print "( a15, es10.3e2 )", "Timing (s)    : ", timing
         print "( a15, es10.3e2 )", "Speedup       : ", speedup
+        print "( a25           )", "-------------------------"
+        print "( a15, a8       )", "psm_val       :", psm_val_str
+        print "( a15, es10.3e2 )", "psm_err       :", psm_err
+        print "( a15, a8       )", "ps0_val       :", ps0_val_str
+        print "( a15, es10.3e2 )", "ps0_err       :", ps0_err
+        print "( a15, a8       )", "psx_val       :", psx_val_str
+        print "( a15, es10.3e2 )", "psx_err       :", psx_err
+        print "( a15, a8       )", "psxx_val      :", psxx_val_str
+        print "( a15, es10.3e2 )", "psxx_err      :", psxx_err
+        print "( a15, a8       )", "psy_val       :", psy_val_str
+        print "( a15, es10.3e2 )", "psy_err       :", psy_err
+        print "( a15, a8       )", "psyy_val      :", psyy_val_str
+        print "( a15, es10.3e2 )", "psyy_err      :", psyy_err
+        print "( a15, a8       )", "psxy_val      :", psxy_val_str
+        print "( a15, es10.3e2 )", "psxy_err      :", psxy_err
+        write (*,*) ""
         write (*,*) ""
     END SUBROUTINE print_results_adv_x
 
@@ -288,8 +382,21 @@ MODULE Nemo_Adv_X_Run
             time_start, &   ! Registers start time.
             time_exec       ! Registers end time - start time.
 
-        ! Validation boolean.
+            ! Validation booleans per matrix.
+        logical :: psm_val                         ! area
+        LOGICAL :: ps0_val                         ! field to be advected
+        LOGICAL :: psx_val, psy_val                ! 1st moments 
+        LOGICAL :: psxx_val, psyy_val, psxy_val    ! 2nd moments
+
+        ! Error values per matrix.
+        REAL(wp) :: psm_err                        ! area
+        REAL(wp) :: ps0_err                        ! field to be advected
+        REAL(wp) :: psx_err, psy_err               ! 1st moments 
+        REAL(wp) :: psxx_err, psyy_err, psxy_err   ! 2nd moments
+
+        ! Global validation boolean and error real.
         LOGICAL :: validation
+        REAL(wp) :: error
 
         ! Time the execution of the given function.
         time_start = omp_get_wtime()
@@ -298,21 +405,19 @@ MODULE Nemo_Adv_X_Run
              e1e2t, tmask)
         time_exec = omp_get_wtime() - time_start
 
-#ifdef DEBUG_ON
-    ! Print matrices to test repeatability.
-    write (*,*) "main_program: after validate_results_adv_x"
-    call print_real_3d_matrix(ps0, "ps0")
-#endif
-
         ! Validate results.
         call validate_results_adv_x &
             (seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, &
             seq_psxy, psm, ps0, psx, psxx, psy, psyy, psxy, &
-            validation)
+            psm_val, ps0_val, psx_val, psxx_val, psy_val, psyy_val, psxy_val, &
+            psm_err, ps0_err, psx_err, psxx_err, psy_err, psyy_err, psxy_err, &
+            validation, error)
 
         ! Print results.
         call print_results_adv_x &
-            (func_name, validation, time_exec, time_seq / time_exec)
+            (func_name, validation, error, time_exec, time_seq / time_exec, &
+            psm_val, ps0_val, psx_val, psxx_val, psy_val, psyy_val, psxy_val, &
+            psm_err, ps0_err, psx_err, psxx_err, psy_err, psyy_err, psxy_err)
 
         ! Reset variables for next execution.
         call reset_adv_x &
@@ -333,7 +438,6 @@ program Nemo_Adv_X
     use Nemo_Adv_X_Data
     use Nemo_Adv_X_Data_Beta
     use Nemo_Adv_X_Data_Simd
-    use omp_lib
 
     REAL(wp) :: pdt             ! the time step
     REAL(wp) :: pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
@@ -402,12 +506,11 @@ program Nemo_Adv_X
 #ifdef DEBUG_ON
     ! Print matrices to test repeatability.
     write (*,*) "main_program: after initialization"
-    call print_real_3d_matrix(init_ps0, "init_ps0")
 #endif
 
-    !-------------------------!
-    !  Call sequential code.  !
-    !-------------------------!
+    !-------------------------------------!
+    !  Call sequential code as baseline.  !
+    !-------------------------------------!
     time_start = omp_get_wtime()
     call adv_x_mock_seq &
         (JPI, JPJ, pdt, put , pcrh, seq_psm , seq_ps0, seq_psx, seq_psxx, &
@@ -416,13 +519,26 @@ program Nemo_Adv_X
 
 #ifdef DEBUG_ON
     ! Print matrices to test repeatability.
-    write (*,*) "main_program: after adv_x_mock_seq"
-    call print_real_3d_matrix(seq_ps0, "seq_ps0")
+    write (*,*) "main_program: after sequential baseline"
 #endif
 
-    ! Print sequential results.
-    call print_results_adv_x &
-            ("sequential", .true., time_seq, 1.0_wp)
+    !----------------------------------!
+    !  Call sequential code as check.  !
+    !----------------------------------!
+    mock_func => adv_x_mock_seq
+    call run_mock(mock_func, "sequential", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+
+    !------------------------!
+    !  Call data_beta code.  !
+    !------------------------!
+    mock_func => adv_x_mock_data_beta
+    call run_mock(mock_func, "data_beta", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
 
     !-------------------!
     !  Call data code.  !
@@ -438,15 +554,6 @@ program Nemo_Adv_X
     !------------------------!
     mock_func => adv_x_mock_data_simd
     call run_mock(mock_func, "data_simd", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
-
-    !------------------------!
-    !  Call data_beta code.  !
-    !------------------------!
-    mock_func => adv_x_mock_data_beta
-    call run_mock(mock_func, "data_beta", time_seq, &
         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
