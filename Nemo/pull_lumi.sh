@@ -1,0 +1,1 @@
+scp -r lumi:openmp-offload/Nemo/adv_x_mock/{*.F90,Makefile,results.*} ./lumi_version
