@@ -382,7 +382,7 @@ MODULE Nemo_Adv_X_Run
             time_start, &   ! Registers start time.
             time_exec       ! Registers end time - start time.
 
-            ! Validation booleans per matrix.
+        ! Validation booleans per matrix.
         logical :: psm_val                         ! area
         LOGICAL :: ps0_val                         ! field to be advected
         LOGICAL :: psx_val, psy_val                ! 1st moments 
@@ -435,6 +435,8 @@ program Nemo_Adv_X
 
     ! External imports.
     use Nemo_Adv_X_Seq
+    use Nemo_Adv_X_Collapse_CPU
+    use Nemo_Adv_X_Collapse_Custom
     use Nemo_Adv_X_Data
     use Nemo_Adv_X_Data_Beta
     use Nemo_Adv_X_Data_Simd
@@ -448,19 +450,19 @@ program Nemo_Adv_X
     ! Variables to use during executions.
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psm                ! area
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: ps0                ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psx , psy          ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psx , psy          ! 1st moments
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: psxx, psyy, psxy   ! 2nd moments
 
     ! Variables to use as storage of sequential values.
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psm                         ! area
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_ps0                         ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psx, seq_psy                ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psx, seq_psy                ! 1st moments
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: seq_psxx, seq_psyy, seq_psxy    ! 2nd moments
 
     ! Variables to use as storage of initial values.
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psm                            ! area
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_ps0                            ! field to be advected
-    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psx, init_psy                  ! 1st moments 
+    REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psx, init_psy                  ! 1st moments
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: init_psxx, init_psyy, init_psxy     ! 2nd moments
 
     ! Used for timing executions.
@@ -539,6 +541,24 @@ program Nemo_Adv_X
         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+    
+    !---------------------------!
+    !  Call collapse_cpu code.  !
+    !---------------------------!
+    mock_func => adv_x_mock_collapse_cpu
+    call run_mock(mock_func, "collapse_cpu", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+
+    !------------------------------!
+    !  Call collapse_custom code.  !
+    !------------------------------!
+    mock_func => adv_x_mock_collapse_custom
+    call run_mock(mock_func, "collapse_custom", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
     !-------------------!
     !  Call data code.  !

@@ -1,13 +1,13 @@
-AMD_FLAGS=-O3 -homp -hnoacc -fopenmp -lm
+AMD_FLAGS=-O1 -hipa3 -homp -hnoacc -fopenmp -lm 	# Add -hlist=amid for listings
 AMD_DEBUG_FLAGS=-G0 -DDEBUG_ON=1
 
-NVIDIA_FLAGS=-O3 -Wall -Wextra -Wconversion -fopenmp -mp=gpu -lm
+NVIDIA_FLAGS=-O1 -Wall -Wextra -Wconversion -fopenmp -mp=gpu -lm
 NVIDIA_DEBUG_FLAGS=-g -DDEBUG_ON=1
 
 LOCAL_FLAGS=-fopenmp
 LOCAL_DEBUG_FLAGS=-g -DDEBUG_ON=1
 
-FFILES=adv_x_mock_data_simd.F90 adv_x_mock_data_beta.F90 adv_x_mock_data.F90 adv_x_mock_seq.F90 helpers.F90 adv_x_mock.F90
+FFILES=adv_x_mock_data_simd.F90 adv_x_mock_data_beta.F90 adv_x_mock_data.F90 adv_x_mock_collapse_cpu.F90 adv_x_mock_collapse_custom.F90 adv_x_mock_seq.F90 helpers.F90 adv_x_mock.F90
 
 
 # AMD targets.
@@ -32,4 +32,7 @@ adv_x_mock_local_debug: helpers.F90 adv_x_mock.F90
 	gfortran ${LOCAL_FLAGS} ${LOCAL_DEBUG_FLAGS} ${FFILES} -o adv_x_mock_debug.o
 
 clean:
-	rm -rf *.o *.mod
+	rm -rf *.o *.mod *.acc.s *.lst *.opt *.cg
+
+clean_perf:
+	rm -rf results.*
