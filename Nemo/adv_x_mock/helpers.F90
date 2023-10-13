@@ -7,7 +7,8 @@ MODULE Nemo_Helpers
 
     public :: &
         print_real_2d_matrix, &
-        print_real_3d_matrix
+        print_real_3d_matrix, &
+        matrix_equality_real
 
 contains
 
@@ -55,5 +56,21 @@ contains
             write(*,*) ""
         END DO
     END SUBROUTINE print_real_3d_matrix
+
+
+    LOGICAL FUNCTION matrix_equality_real(m1, m2) result(equals)
+        !!---------------------------------------------------------------------
+        !! - Routine: matrix_equality_real
+        !! - Purpose: Set 'equal' according to matrix equality using tolerance.
+        !!---------------------------------------------------------------------
+        REAL(wp), DIMENSION(:,:,:), INTENT(in)  :: m1, m2
+
+        IF (ANY((abs(m1-m2) > epsilon(m1(1,1,1))))) THEN
+            equals = .true.
+        ELSE
+            equals = .false.
+        END IF
+    END FUNCTION matrix_equality_real
+
 
 END MODULE Nemo_Helpers

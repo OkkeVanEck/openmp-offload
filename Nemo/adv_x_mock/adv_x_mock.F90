@@ -3,6 +3,7 @@
 MODULE Nemo_Adv_X_Helpers
 
     use omp_lib 
+    use Nemo_Helpers
 
     ! Set the working-precision to double precision.
     use, intrinsic :: iso_fortran_env, wp=>real64
@@ -157,20 +158,20 @@ contains
         ! Validation boolean.
         LOGICAL, INTENT(out) :: validation
         
-        ! Classic Fortran does NOT support lazy if-comparison, so..
-        IF (ANY(psm.ne.seq_psm)) then
+        ! Classic Fortran does NOT support lazy if-comparison..
+        IF (matrix_equality_real(psm, seq_psm)) THEN
             validation = .false.
-        ELSEIF (ANY(ps0.ne.seq_ps0)) THEN
+        ELSEIF (matrix_equality_real(ps0, seq_ps0)) THEN
             validation = .false.
-        ELSEIF (ANY(psx.ne.seq_psx)) THEN
+        ELSEIF (matrix_equality_real(psx, seq_psx)) THEN
             validation = .false.
-        ELSEIF (ANY(psxx.ne.seq_psxx)) THEN
+        ELSEIF (matrix_equality_real(psxx, seq_psxx)) THEN
             validation = .false.
-        ELSEIF (ANY(psy.ne.seq_psy)) THEN
+        ELSEIF (matrix_equality_real(psy, seq_psy)) THEN
             validation = .false.
-        ELSEIF (ANY(psyy.ne.seq_psyy)) THEN
+        ELSEIF (matrix_equality_real(psyy, seq_psyy)) THEN
             validation = .false.
-        ELSEIF (ANY(psxy.ne.seq_psxy)) THEN
+        ELSEIF (matrix_equality_real(psxy, seq_psxy)) THEN
             validation = .false.
         ELSE
             validation = .true.
@@ -333,8 +334,6 @@ program Nemo_Adv_X
     use Nemo_Adv_X_Data_Beta
     use Nemo_Adv_X_Data_Simd
     use omp_lib
-
-    IMPLICIT none
 
     REAL(wp) :: pdt             ! the time step
     REAL(wp) :: pcrh            ! call adv_x then adv_y (=1) or the opposite (=0)
