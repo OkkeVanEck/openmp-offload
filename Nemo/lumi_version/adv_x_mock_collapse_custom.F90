@@ -72,7 +72,7 @@ contains
     !$omp target data map(alloc:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q)&
     !$omp& map(to:e1e2t,tmask,put) map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)
     !
-    !$omp target teams distribute private(zs1max,zslpmax,ztemp,zs1new,zalf,zalfq,zbt,&
+    !$omp target teams distribute parallel do simd private(zs1max,zslpmax,ztemp,zs1new,zalf,zalfq,zbt,&
     !$omp& zs2new,zalf1,zalf1q,zbt1,zpsm,zps0,zpsx,zpsy,zpsxx,zpsyy,zpsxy,rswitch,jl,jj)
     DO nn = 1, (jcat * (jjmax - jjmin + 1)) ! loop on categories and limitation of moments
         jl = 1 + (nn - 1) / (jjmax - jjmin + 1)
@@ -227,7 +227,7 @@ contains
             psxy(ji,jj,jl) = zpsxy
         END DO
     END DO
-    !$omp end target teams distribute
+    !$omp end target teams distribute parallel do simd
     !$omp end target data
 
 #ifdef DEBUG_ON

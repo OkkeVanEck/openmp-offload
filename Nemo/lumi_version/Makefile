@@ -7,7 +7,7 @@ NVIDIA_DEBUG_FLAGS=-g -DDEBUG_ON=1
 LOCAL_FLAGS=-fopenmp
 LOCAL_DEBUG_FLAGS=-g -DDEBUG_ON=1
 
-FFILES=adv_x_mock_data_simd.F90 adv_x_mock_data_beta.F90 adv_x_mock_data.F90 adv_x_mock_collapse_cpu.F90 adv_x_mock_collapse_custom.F90 adv_x_mock_seq.F90 helpers.F90 adv_x_mock.F90
+FFILES=adv_x_mock_data_simd.F90 adv_x_mock_data_cat.F90 adv_x_mock_data_beta.F90 adv_x_mock_data.F90 adv_x_mock_collapse_cpu.F90 adv_x_mock_collapse_custom.F90 adv_x_mock_seq.F90 helpers.F90 adv_x_mock.F90
 
 
 # AMD targets.
@@ -32,7 +32,7 @@ adv_x_mock_local_debug: helpers.F90 adv_x_mock.F90
 	gfortran ${LOCAL_FLAGS} ${LOCAL_DEBUG_FLAGS} ${FFILES} -o adv_x_mock_debug.o
 
 clean:
-	rm -rf *.o *.mod *.acc.s *.lst *.opt *.cg
+	rm -rf *.o *.mod *.acc.s *.lst *.opt *.cg core
 
 clean_perf:
 	rm -rf results.*

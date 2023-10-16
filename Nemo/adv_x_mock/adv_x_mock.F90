@@ -439,6 +439,7 @@ program Nemo_Adv_X
     use Nemo_Adv_X_Collapse_Custom
     use Nemo_Adv_X_Data
     use Nemo_Adv_X_Data_Beta
+    use Nemo_Adv_X_Data_Cat
     use Nemo_Adv_X_Data_Simd
 
     REAL(wp) :: pdt             ! the time step
@@ -542,6 +543,15 @@ program Nemo_Adv_X
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
     
+    !------------------------!
+    !  Call data_beta code.  !
+    !------------------------!
+    mock_func => adv_x_mock_data_cat
+    call run_mock(mock_func, "data_cat", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+
     !---------------------------!
     !  Call collapse_cpu code.  !
     !---------------------------!
