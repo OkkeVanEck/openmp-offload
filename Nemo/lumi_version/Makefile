@@ -7,7 +7,16 @@ NVIDIA_DEBUG_FLAGS=-g -DDEBUG_ON=1
 LOCAL_FLAGS=-fopenmp
 LOCAL_DEBUG_FLAGS=-g -DDEBUG_ON=1
 
-FFILES=adv_x_mock_data_simd.F90 adv_x_mock_data_cat.F90 adv_x_mock_data_beta.F90 adv_x_mock_data.F90 adv_x_mock_collapse_cpu.F90 adv_x_mock_collapse_custom.F90 adv_x_mock_seq.F90 helpers.F90 adv_x_mock.F90
+FFILES=\
+adv_x_mock_data_simd.F90 \
+adv_x_mock_data_cat.F90 \
+adv_x_mock_data_beta.F90 \
+adv_x_mock_data.F90 \
+adv_x_mock_collapse_cpu.F90 \
+adv_x_mock_collapse_custom.F90 \
+adv_x_mock_collapse.F90 \
+adv_x_mock_seq.F90 helpers.F90 \
+adv_x_mock.F90
 
 
 # AMD targets.

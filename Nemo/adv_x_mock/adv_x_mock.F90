@@ -435,6 +435,7 @@ program Nemo_Adv_X
 
     ! External imports.
     use Nemo_Adv_X_Seq
+    use Nemo_Adv_X_Collapse
     use Nemo_Adv_X_Collapse_CPU
     use Nemo_Adv_X_Collapse_Custom
     use Nemo_Adv_X_Data
@@ -566,6 +567,15 @@ program Nemo_Adv_X
     !------------------------------!
     mock_func => adv_x_mock_collapse_custom
     call run_mock(mock_func, "collapse_custom", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+
+    !-----------------------!
+    !  Call collapse code.  !
+    !-----------------------!
+    mock_func => adv_x_mock_collapse
+    call run_mock(mock_func, "collapse", time_seq, &
         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    

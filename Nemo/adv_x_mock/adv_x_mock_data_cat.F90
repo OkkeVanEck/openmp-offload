@@ -71,9 +71,9 @@ contains
     !$omp target data map(alloc:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q)&
     !$omp& map(to:e1e2t,tmask,put) map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)
     !
-    !
     ! Limitation of moments.     
-    !$omp target teams distribute parallel do simd
+    !$omp target teams distribute parallel do simd shared(e1e2t,tmask,put,psm,ps0,psx,psy,psxx,psyy,psxy) &
+    !$omp& private(zfm,zf0,zfx,zfxx,zfy,zfyy,zfxy, zalg,zalg1,zalg1q)
     DO jl = 1, jcat   ! loop on categories
         DO jj = jjmin, jjmax
             DO ji = 1, jpi
@@ -227,7 +227,7 @@ contains
         END DO
     END DO
     !$omp end target teams distribute parallel do simd
-    !$omp end target data
+    !$omp end target data 
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: adv_x_mock_data_cat"

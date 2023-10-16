@@ -1,4 +1,4 @@
-! Implements the data version of adv_x_mock based on adv_x_mock.F90.
+! Implements the collapse_custom version of adv_x_mock based on adv_x_mock.F90.
 
 MODULE Nemo_Adv_X_Collapse_Custom
 
@@ -17,9 +17,8 @@ contains
         (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
         e1e2t, tmask)
     !!---------------------------------------------------------------------
-    !! - Routine: adv_x_mock_data
-    !! - Purpose: Parallelized version from the adv_x_mock_data branch
-    !! - Source: https://earth.bsc.es/gitlab/amedvede/nemogcm_v40/-/blob/gpu_icedyn_adv_xy_data/src/ICE/icedyn_adv_pra.F90
+    !! - Routine: adv_x_mock_collapse_custom
+    !! - Purpose: Parallelized version using a custom collapse directive.
     !!---------------------------------------------------------------------
     INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
     REAL(wp)                  , INTENT(in) :: pdt                ! the time step
@@ -72,8 +71,8 @@ contains
     !$omp target data map(alloc:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q)&
     !$omp& map(to:e1e2t,tmask,put) map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)
     !
-    !$omp target teams distribute parallel do simd private(zs1max,zslpmax,ztemp,zs1new,zalf,zalfq,zbt,&
-    !$omp& zs2new,zalf1,zalf1q,zbt1,zpsm,zps0,zpsx,zpsy,zpsxx,zpsyy,zpsxy,rswitch,jl,jj)
+    !$omp target teams distribute parallel do simd shared(e1e2t,tmask,put,psm,ps0,psx,psy,psxx,psyy,psxy) &
+    !$omp& private(zfm,zf0,zfx,zfxx,zfy,zfyy,zfxy, zalg,zalg1,zalg1q)
     DO nn = 1, (jcat * (jjmax - jjmin + 1)) ! loop on categories and limitation of moments
         jl = 1 + (nn - 1) / (jjmax - jjmin + 1)
         jj = jjmin + MOD(nn - 1, jjmax - jjmin + 1)

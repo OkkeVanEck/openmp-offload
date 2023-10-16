@@ -1,6 +1,6 @@
-! Implements a test version of adv_x_mock based on adv_x_mock.F90.
+! Implements the collapse version of adv_x_mock based on adv_x_mock.F90.
 
-MODULE Nemo_Adv_X_Test
+MODULE Nemo_Adv_X_Collapse
 
     use omp_lib 
 
@@ -9,18 +9,17 @@ MODULE Nemo_Adv_X_Test
 
     implicit none 
   
-    public :: adv_x_mock_test
+    public :: adv_x_mock_collapse
 
 contains 
 
-    SUBROUTINE adv_x_mock_test &
+    SUBROUTINE adv_x_mock_collapse &
         (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
         e1e2t, tmask)
-    !!------------------------------------------------------------
-    !! - Routine: adv_x_mock_test
-    !! - Purpose: Computes and adds the advection trend to sea-ice
-    !!                variable on x axis
-    !!------------------------------------------------------------
+    !!---------------------------------------------------------------------
+    !! - Routine: adv_x_mock_collapse
+    !! - Purpose: Parallelized version using a collapse directive.
+    !!---------------------------------------------------------------------
     INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
     REAL(wp)                  , INTENT(in) :: pdt                ! the time step
     REAL(wp)                  , INTENT(in) :: pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
@@ -49,7 +48,7 @@ contains
     INTEGER :: jpjm1, fs_2, fs_jpim1                ! optimization and config variables.
 #ifdef DEBUG_ON
     write (*,*) ""
-    write (*,*) "IN: adv_x_mock_test"
+    write (*,*) "IN: adv_x_mock_collapse"
 #endif
     ! Local version assignment for variables.
     jpjm1 = jpj - 1
@@ -68,18 +67,16 @@ contains
     !
     jcat = SIZE( ps0 , 3 )   ! size of input arrays
     !
-    !$omp target teams distribute &
-    !$omp& map(to:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q,zbt,zalf,zbt1,zalf1,ztemp,zslpmax,zpsx,zs2new,zs1new,zalf1q,zpsxx,zalfq,zps0,zpsm,zpsxy,zpsy,zs1max,zpsyy,rswitch) &
-    !$omp& map(to:e1e2t,tmask,put) &
-    !$omp& map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)
+    !$omp target data map(alloc:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q)&
+    !$omp& map(to:e1e2t,tmask,put) map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)
     !
+    ! Limitation of moments.     
+    !$omp target teams distribute parallel do simd collapse(2) &
+    !$omp& shared(e1e2t,tmask,put,psm,ps0,psx,psy,psxx,psyy,psxy) &
+    !$omp& private(zfm,zf0,zfx,zfxx,zfy,zfyy,zfxy, zalg,zalg1,zalg1q)
     DO jl = 1, jcat   ! loop on categories
-        !
-        ! Limitation of moments.
         DO jj = jjmin, jjmax
-        
             DO ji = 1, jpi
-
                 zpsm  = psm (ji,jj,jl) ! optimization
                 zps0  = ps0 (ji,jj,jl)
                 zpsx  = psx (ji,jj,jl)
@@ -229,13 +226,13 @@ contains
             END DO
         END DO
     END DO
-    !$omp end target teams distribute
+    !$omp end target teams distribute parallel do simd
+    !$omp end target data 
 
 #ifdef DEBUG_ON
-    write (*,*) "OUT: adv_x_mock_test"
+    write (*,*) "OUT: adv_x_mock_collapse"
     write (*,*) ""
 #endif
-    END SUBROUTINE adv_x_mock_test
+    END SUBROUTINE adv_x_mock_collapse
 
-
-END MODULE Nemo_Adv_X_Test
+END MODULE Nemo_Adv_X_Collapse

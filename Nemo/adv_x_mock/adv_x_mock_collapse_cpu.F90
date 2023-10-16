@@ -1,4 +1,4 @@
-! Implements the data version of adv_x_mock based on adv_x_mock.F90.
+! Implements the collapse_cpu version of adv_x_mock based on adv_x_mock.F90.
 
 MODULE Nemo_Adv_X_Collapse_CPU
 
