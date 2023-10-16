@@ -17,9 +17,8 @@ contains
         (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
         e1e2t, tmask)
     !!---------------------------------------------------------------------
-    !! - Routine: adv_x_mock_data
-    !! - Purpose: Parallelized version from the adv_x_mock_data branch
-    !! - Source: https://earth.bsc.es/gitlab/amedvede/nemogcm_v40/-/blob/gpu_icedyn_adv_xy_data/src/ICE/icedyn_adv_pra.F90
+    !! - Routine: adv_x_mock_collapse_cpu
+    !! - Purpose: CPU version using our custom collapse computation.
     !!---------------------------------------------------------------------
     INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
     REAL(wp)                  , INTENT(in) :: pdt                ! the time step
