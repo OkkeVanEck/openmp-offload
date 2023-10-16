@@ -42,7 +42,7 @@ comp_local_debug: helpers.F90 adv_x_mock.F90
 
 # Clean targets
 clean:
-	rm -rf *.o *.mod *.acc.s *.lst *.opt *.cg core
+	rm -rf *.o *.out *.mod *.acc.s *.lst *.opt *.cg core
 
 clean_perf:
 	rm -rf results.* report*
