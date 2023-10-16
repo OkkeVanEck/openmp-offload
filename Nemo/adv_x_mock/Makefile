@@ -28,7 +28,7 @@ comp_amd_debug: helpers.F90 adv_x_mock.F90
 
 # NVIDIA compilation targets.
 comp_nvidia: helpers.F90 adv_x_mock.F90 
-	nvfortran ${NVIDIA_FLAGS} ${FFILES} -o adv_x_mock.o
+	nvfortran ${NVIDIA_FLAGS} ${FFILES} -o adv_x_mock.out
 
 comp_nvidia_debug: helpers.F90 adv_x_mock.F90 
 	nvfortran ${NVIDIA_FLAGS} ${NVIDIA_DEBUG_FLAGS} ${FFILES} -o adv_x_mock_debug.out
@@ -49,16 +49,16 @@ clean_perf:
 
 # Combined targets
 amd:
-	make clean
-	make clean_perf
-	make comp_amd
+	@make -s clean
+	@make -s clean_perf
+	@make -s comp_amd
 
 nvidia:
-	make clean
-	make clean_perf
-	make comp_nvidia
+	@make -s clean
+	@make -s clean_perf
+	@make -s comp_nvidia
 
 local:
-	make clean
-	make clean_perf
-	make comp_nvidia
+	@make -s clean
+	@make -s clean_perf
+	@make -s comp_nvidia
