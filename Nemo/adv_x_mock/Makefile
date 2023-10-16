@@ -49,19 +49,19 @@ clean_perf:
 
 # Combined targets
 amd:
-	@make -s clean
-	@make -s clean_perf
+	@make --no-print-directory clean
+	@make --no-print-directory clean_perf
 	clear
-	@make -s comp_amd
+	@make --no-print-directory comp_amd
 
 nvidia:
-	@make -s clean
-	@make -s clean_perf
+	@make --no-print-directory clean
+	@make --no-print-directory clean_perf
 	clear
-	@make -s comp_nvidia
+	@make --no-print-directory comp_nvidia
 
 local:
-	@make -s clean
-	@make -s clean_perf
+	@make --no-print-directory clean
+	@make --no-print-directory clean_perf
 	clear
-	@make -s comp_nvidia
+	@make --no-print-directory comp_nvidia
