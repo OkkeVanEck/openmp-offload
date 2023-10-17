@@ -71,7 +71,7 @@ contains
     !$omp target data map(alloc:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q)&
     !$omp& map(to:e1e2t,tmask,put) map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)
     !
-    !$omp target teams distribute parallel do simd shared(e1e2t,tmask,put,psm,ps0,psx,psy,psxx,psyy,psxy) &
+    !$omp target teams distribute parallel do simd &
     !$omp& private(zfm,zf0,zfx,zfxx,zfy,zfyy,zfxy, zalg,zalg1,zalg1q)
     DO nn = 1, (jcat * (jjmax - jjmin + 1)) ! loop on categories and limitation of moments
         jl = 1 + (nn - 1) / (jjmax - jjmin + 1)
