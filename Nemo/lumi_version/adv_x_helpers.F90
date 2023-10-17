@@ -18,12 +18,16 @@ MODULE Nemo_Adv_X_Helpers
 contains
 
     SUBROUTINE initialize_adv_x &
-            (JPI, JPJ, pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
+            (JPI, JPJ, &
+             pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
         !!----------------------------------------------------------
         !! - Routine: initialize_adv_x
         !! - Purpose: Initializes variables required for adv_x_mock.
         !!----------------------------------------------------------
-        INTEGER                                , INTENT(out) ::   JPI, JPJ          ! Dimensions of the workspace.
+        INTEGER, INTENT(out) :: &
+            JPI, &      ! i-Dimension of the workspace.
+            JPJ         ! j-Dimension of the workspace.
+        
         REAL(wp)                               , INTENT(out) ::   pdt               ! the time step
         REAL(wp)                               , INTENT(out) ::   pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
         REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(out) ::   put               ! i-direction ice velocity at U-point [m/s]
@@ -38,10 +42,18 @@ contains
         INTEGER :: n
         INTEGER, ALLOCATABLE :: seed(:)
 
-        ! Variables that define the dimensions of the arrays.
+        ! Variables used for setting the dimensions.
         INTEGER :: &
             NCATS, &    ! Number of categories, functioning as dim 3.
-            TMASK3      ! Uncertain of the origin, but value comes from logs.
+            TMASK3      ! Uncertain of the origin.
+
+        ! Stat variable for reading environment values.
+        INTEGER :: stat
+        CHARACTER(255) :: jpi_env
+        CHARACTER(255) :: jpj_env
+        CHARACTER(255) :: ncats_env
+        CHARACTER(255) :: tmask3_env
+
 
 #ifdef DEBUG_ON
     write (*,*) ""
@@ -51,12 +63,42 @@ contains
         ! Set config variables.
         pdt = 1
         pcrh = 1
+        
+        ! Fetch environment variables for constants.
+        CALL getenv("JPI", jpi_env)
+        CALL getenv("JPJ", jpj_env)
+        CALL getenv("NCATS", ncats_env)
+        CALL getenv("TMASK3", tmask3_env)
 
-        ! Set dimension constants according to CRAY_ACC_DEBUG=3 log.
-        JPI = 92
-        JPJ = 167
-        NCATS = 5
-        TMASK3 = 75     
+        ! Set constants according to the environment.
+        read(jpi_env, *, iostat=stat) JPI
+        read(jpj_env, *, iostat=stat) JPJ
+        read(ncats_env, *, iostat=stat) NCATS
+        read(tmask3_env, *, iostat=stat) TMASK3
+
+        ! Set default values if the environment does not provide any.
+        IF (JPI == 0) THEN
+            JPI = 92
+        END IF
+        IF (JPJ == 0) THEN
+            JPJ = 167
+        END IF
+        IF (NCATS == 0) THEN
+            NCATS = 5
+        END IF
+        IF (TMASK3 == 0) THEN
+            TMASK3 = 75
+        END IF
+
+        ! Write dimensional setup.
+        write(*,*) "Matrix Setup"
+        write(*,*) "============"
+        write(*,*) "JPI:     ", JPI
+        write(*,*) "JPJ:     ", JPJ
+        write(*,*) "NCATS:   ", NCATS
+        write(*,*) "TMASK3:  ", TMASK3
+        write(*,*) ""
+        write(*,*) ""
 
         ! Allocate data for the variables.
         ! Dimensions are extracted from a nemo run using CRAY_ACC_DEBUG=3.
