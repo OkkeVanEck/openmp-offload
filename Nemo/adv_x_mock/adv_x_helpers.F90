@@ -63,6 +63,12 @@ contains
         ! Set config variables.
         pdt = 1
         pcrh = 1
+
+        ! Zero out the dimension variables.
+        JPI = 0
+        JPJ = 0
+        NCATS = 0
+        TMASK3 = 0
         
         ! Fetch environment variables for constants.
         CALL getenv("JPI", jpi_env)
