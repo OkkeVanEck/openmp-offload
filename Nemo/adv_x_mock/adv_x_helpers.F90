@@ -54,12 +54,6 @@ contains
         CHARACTER(255) :: ncats_env
         CHARACTER(255) :: tmask3_env
 
-
-#ifdef DEBUG_ON
-    write (*,*) ""
-    write (*,*) "IN: initialize_adv_x"
-#endif
-
         ! Set config variables.
         pdt = 1
         pcrh = 1
@@ -108,9 +102,6 @@ contains
 
         ! Allocate data for the variables.
         ! Dimensions are extracted from a nemo run using CRAY_ACC_DEBUG=3.
-#ifdef DEBUG_ON
-    write (*,*) "initialize_adv_x: Allocating data.."
-#endif
         allocate ( put ( JPI, JPJ ) )
         allocate ( psm ( JPI, JPJ, NCATS) )
         allocate ( ps0 ( JPI, JPJ, NCATS) )
@@ -130,9 +121,6 @@ contains
         deallocate(seed)
 
         ! Fill matrices with random values.
-#ifdef DEBUG_ON
-    write (*,*) "initialize_adv_x: Filling matrices with random numbers.."
-#endif
         call RANDOM_NUMBER(put)
         call RANDOM_NUMBER(psm)
         call RANDOM_NUMBER(ps0)
@@ -144,10 +132,6 @@ contains
         call RANDOM_NUMBER(e1e2t)
         call RANDOM_NUMBER(tmask)
 
-#ifdef DEBUG_ON
-    write (*,*) "OUT: initialize_adv_x"
-    write (*,*) ""
-#endif
     END SUBROUTINE initialize_adv_x
 
 

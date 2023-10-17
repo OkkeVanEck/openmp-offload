@@ -42,6 +42,9 @@ comp_amd_val_debug: ${VAL_FILES} validation.F90
 comp_amd_perf: ${PERF_FILES} performance.F90 
 	ftn ${AMD_FLAGS} ${PERF_FILES} performance.F90 -o performance.out
 
+comp_amd_perf_debug: ${PERF_FILES} performance.F90 
+	ftn ${AMD_FLAGS} ${AMD_DEBUG_FLAGS} ${PERF_FILES} performance.F90 -o performance_debug.out
+
 # NVIDIA compilation targets.
 comp_nvidia_val: ${VAL_FILES} validation.F90
 	nvfortran ${NVIDIA_FLAGS} ${VAL_FILES} validation.F90 -o validation.out
@@ -75,6 +78,12 @@ amd_perf:
 	@make --no-print-directory clean
 	@make --no-print-directory clean_perf
 	@make --no-print-directory comp_amd_perf
+
+amd_perf_debug:
+	clear
+	@make --no-print-directory clean
+	@make --no-print-directory clean_perf
+	@make --no-print-directory comp_amd_perf_debug
 
 nvidia_val:
 	clear

@@ -47,10 +47,7 @@ contains
     REAL(wp), PARAMETER ::   epsi20 = 1.e-20_wp     ! small number 
     REAL(wp)            ::   rswitch                ! switch for the presence of ice (1) or not (0)
     INTEGER :: jpjm1, fs_2, fs_jpim1                ! optimization and config variables.
-#ifdef DEBUG_ON
-    write (*,*) ""
-    write (*,*) "IN: adv_x_mock_seq"
-#endif
+
     ! Local version assignment for variables.
     jpjm1 = jpj - 1
 
@@ -226,11 +223,6 @@ contains
         END DO
     END DO
 
-#ifdef DEBUG_ON
-    write (*,*) "OUT: adv_x_mock_seq"
-    write (*,*) ""
-#endif
     END SUBROUTINE adv_x_mock_seq
-
 
 END MODULE Nemo_Adv_X_Seq
