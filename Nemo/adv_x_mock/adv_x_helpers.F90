@@ -304,7 +304,7 @@ contains
     END SUBROUTINE print_val_results_adv_x
 
     SUBROUTINE print_perf_results_adv_x &
-        (func_name, validation, error, timing, speedup)
+        (func_name, timing, speedup)
     !!-----------------------------------------------------------------------
     !! - Routine: print_perf_results_adv_x
     !! - Purpose: Print a results overview of a given performance experiment.
@@ -314,21 +314,9 @@ contains
         timing, &                           ! Total runtime.
         speedup                             ! Acquired speedup.
 
-    ! Global validation boolean and error real.
-    LOGICAL, INTENT(in) :: validation
-    REAL(wp), INTENT(in) :: error
-
-    ! Local string conversion for printing logical values.
-    CHARACTER(7) :: validation_string
-
-    ! Convert the validation into a string used for printing.
-    validation_string = convert_logical(validation)
-
     ! Print the overview for the given experiment.
     print "( a8, a, a8 )", &
     "======= ", trim ( func_name ), " ========"
-    print "( a15, a8       )", "Validation    : ", validation_string
-    print "( a15, es10.3e2 )", "Error         : ", error
     print "( a15, es10.3e2 )", "Timing (s)    : ", timing
     print "( a15, es10.3e2 )", "Speedup       : ", speedup
     write (*,*) ""

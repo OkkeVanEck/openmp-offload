@@ -68,6 +68,8 @@ contains
     jcat = SIZE( ps0 , 3 )   ! size of input arrays
     !
     !
+    !$omp parallel private(ji,jj,jl,zs1max,zslpmax,ztemp,zs1new,zalf,zalfq,zbt,&
+    !$omp& zs2new,zalf1,zalf1q,zbt1,zpsm,zps0,zpsx,zpsy,zpsxx,zpsyy,zpsxy,rswitch)
     DO nn = 1, (jcat * (jjmax - jjmin + 1)) ! loop on categories and limitation of moments
         jl = 1 + (nn - 1) / (jjmax - jjmin + 1)
         jj = jjmin + MOD(nn - 1, jjmax - jjmin + 1)
@@ -221,6 +223,7 @@ contains
             psxy(ji,jj,jl) = zpsxy
         END DO
     END DO
+    !$omp end parallel
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: adv_x_mock_collapse_cpu"
