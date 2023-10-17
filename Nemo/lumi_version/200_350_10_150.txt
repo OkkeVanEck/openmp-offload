@@ -1,0 +1,53 @@
+ Matrix Setup
+ ============
+ JPI:      200
+ JPJ:      350
+ NCATS:    5
+ TMASK3:   75
+ 
+ 
+======= sequential =======
+Timing (s)    : 3.931E+00
+Speedup       : 1.000E+00
+ 
+ 
+======= cpu =======
+Timing (s)    : 3.982E+00
+Speedup       : 9.871E-01
+ 
+ 
+======= collapse_cpu =======
+Timing (s)    : 3.975E+00
+Speedup       : 9.889E-01
+ 
+ 
+======= seq_7threads =======
+Timing (s)    : 4.010E+00
+Speedup       : 9.803E-01
+ 
+ 
+======= cpu_7threads =======
+Timing (s)    : 6.363E-01
+Speedup       : 6.177E+00
+ 
+ 
+======= collapse_cpu_7threads =======
+Timing (s)    : 7.239E+01
+Speedup       : 5.430E-02
+ 
+ 
+======= data_beta =======
+Timing (s)    : 1.183E+01
+Speedup       : 3.322E-01
+ 
+ 
+======= collapse_custom =======
+Timing (s)    : 2.823E+01
+Speedup       : 1.393E-01
+ 
+ 
+======= collapse =======
+Timing (s)    : 2.825E+01
+Speedup       : 1.392E-01
+ 
+ 
