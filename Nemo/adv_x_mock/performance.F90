@@ -233,11 +233,40 @@ program Nemo_Adv_X_Performance
     !------------------------------------------------------------------!
     !  Perf test sequential code, also stores results for comparison.  !
     !------------------------------------------------------------------!
+    CALL OMP_SET_NUM_THREADS(1)
     mock_func => adv_x_mock_seq
     call run_mock(mock_func, "sequential", time_seq, &
         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+
+    !----------------------------------------------!
+    !  Perf test collapse_cpu code with 1 thread.  !
+    !----------------------------------------------!
+    mock_func => adv_x_mock_collapse_cpu
+    call run_mock(mock_func, "collapse_cpu", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+    
+    !---------------------------------------------!
+    !  Perf test sequential code with 7 threads.  !
+    !---------------------------------------------!
+    CALL OMP_SET_NUM_THREADS(7)
+    mock_func => adv_x_mock_seq
+    call run_mock(mock_func, "seq_7threads", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+
+    !----------------------------------------------!
+    !  Perf test collapse_cpu code with 7 thread.  !
+    !----------------------------------------------!
+    mock_func => adv_x_mock_collapse_cpu
+    call run_mock(mock_func, "collapse_cpu_7threads", time_seq, &
+        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy) 
 
     !-----------------------------!
     !  Perf test data_beta code.  !
@@ -253,15 +282,6 @@ program Nemo_Adv_X_Performance
     !----------------------------!
     mock_func => adv_x_mock_data_cat
     call run_mock(mock_func, "data_cat", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
-
-    !--------------------------------!
-    !  Perf test collapse_cpu code.  !
-    !--------------------------------!
-    mock_func => adv_x_mock_collapse_cpu
-    call run_mock(mock_func, "collapse_cpu", time_seq, &
         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
