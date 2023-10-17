@@ -100,8 +100,10 @@ MODULE Nemo_Adv_X_Run
             NUM_ITERS           ! Number of iterations.
 
         ! Set performance test specific variables.
+        NUM_DRY_RUNS=10
+        NUM_ITERS=1000
 
-        ! Perform 10 dry runs.
+        ! Perform dry runs.
         DO i=1,NUM_DRY_RUNS
             call mock_func &
             (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
