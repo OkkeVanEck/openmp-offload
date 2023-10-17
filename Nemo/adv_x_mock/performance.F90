@@ -258,13 +258,13 @@ program Nemo_Adv_X_Performance
         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
     
-    !----------------------------!
-    !  Perf test data_cat code.  !
-    !----------------------------!
-    mock_func => adv_x_mock_data_cat
-    call run_mock(mock_func, "data_cat", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+    ! !----------------------------!
+    ! !  Perf test data_cat code.  !
+    ! !----------------------------!
+    ! mock_func => adv_x_mock_data_cat
+    ! call run_mock(mock_func, "data_cat", time_seq, &
+    !     JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
 
     !-----------------------------------!
     !  Perf test collapse_custom code.  !
