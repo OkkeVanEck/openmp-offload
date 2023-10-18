@@ -1,6 +1,10 @@
 # Ignore results of Rocprof profiles.
 **/profile_ftn*/
 
+# Ignore the lumi and meluxina pulls.
+**/lumi_version/
+**/meluxina_version/
+
 # Ignore fortran compilation files.
 **/*.acc.s
 **/*.mod
