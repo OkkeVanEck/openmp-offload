@@ -34,7 +34,7 @@ MODULE Nemo_Adv_X_Run
   CONTAINS
   
     SUBROUTINE run_mock(mock_func, func_name, time_seq, &
-                        jpi, jpj, ncats &
+                        jpi, jpj, ncats, &
                         pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
                         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
         ! Function specific variables.
