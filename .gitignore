@@ -1,5 +1,7 @@
 # Ignore compiler listings.
-*.lst *.opt *.cg
+**/*.lst 
+**/*.opt 
+**/*.cg
 
 # Ignore results of Rocprof profiles.
 **/profile_ftn*/
