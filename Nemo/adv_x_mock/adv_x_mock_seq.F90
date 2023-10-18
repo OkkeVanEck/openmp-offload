@@ -14,14 +14,14 @@ MODULE Nemo_Adv_X_Seq
 contains 
 
     SUBROUTINE adv_x_mock_seq &
-        (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-        e1e2t, tmask)
+        (jpi, jpj, ncats, &
+         pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
     !!------------------------------------------------------------
     !! - Routine: adv_x_mock_seq
     !! - Purpose: Computes and adds the advection trend to sea-ice
     !!                variable on x axis
     !!------------------------------------------------------------
-    INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
+    INTEGER                   , INTENT(in) :: jpi, jpj, ncats    ! Dimension of the workspace.
     REAL(wp)                  , INTENT(in) :: pdt                ! the time step
     REAL(wp)                  , INTENT(in) :: pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
     REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put                ! i-direction ice velocity at U-point [m/s]
@@ -63,7 +63,7 @@ contains
     jjmin = 2     - NINT(pcrh)   ! 1   or 2
     jjmax = jpjm1 + NINT(pcrh)   ! jpj or jpj-1
     !
-    jcat = SIZE( ps0 , 3 )   ! size of input arrays
+    jcat = ncats ! SIZE( ps0 , 3 )   ! size of input arrays
     !
     !
     DO jl = 1, jcat   ! loop on categories

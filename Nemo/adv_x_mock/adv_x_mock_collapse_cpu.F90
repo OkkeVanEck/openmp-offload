@@ -14,13 +14,13 @@ MODULE Nemo_Adv_X_Collapse_CPU
 contains
 
     SUBROUTINE adv_x_mock_collapse_cpu &
-        (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-        e1e2t, tmask)
+        (jpi, jpj, ncats, &
+         pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
     !!---------------------------------------------------------------------
     !! - Routine: adv_x_mock_collapse_cpu
     !! - Purpose: CPU version using our custom collapse computation.
     !!---------------------------------------------------------------------
-    INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
+    INTEGER                   , INTENT(in) :: jpi, jpj, ncats    ! Dimension of the workspace.
     REAL(wp)                  , INTENT(in) :: pdt                ! the time step
     REAL(wp)                  , INTENT(in) :: pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
     REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put                ! i-direction ice velocity at U-point [m/s]
@@ -62,7 +62,7 @@ contains
     jjmin = 2     - NINT(pcrh)   ! 1   or 2
     jjmax = jpjm1 + NINT(pcrh)   ! jpj or jpj-1
     !
-    jcat = SIZE( ps0 , 3 )   ! size of input arrays
+    jcat = ncats ! SIZE( ps0 , 3 )   ! size of input arrays
     !
     !
     !$omp parallel private(ji,jj,jl,zs1max,zslpmax,ztemp,zs1new,zalf,zalfq,zbt,&

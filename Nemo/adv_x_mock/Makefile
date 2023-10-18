@@ -17,6 +17,9 @@ adv_x_mock_data.F90 \
 adv_x_mock_collapse_cpu.F90 \
 adv_x_mock_collapse_custom.F90 \
 adv_x_mock_collapse.F90 \
+adv_x_mock_rc.F90 \
+adv_x_mock_rc_collapsed.F90 \
+adv_x_mock_rc_collapsed_wrong.F90 \
 adv_x_mock_cpu.F90 \
 adv_x_mock_seq.F90
 
@@ -28,6 +31,9 @@ adv_x_mock_data_beta.F90 \
 adv_x_mock_collapse_cpu.F90 \
 adv_x_mock_collapse_custom.F90 \
 adv_x_mock_collapse.F90 \
+adv_x_mock_rc.F90 \
+adv_x_mock_rc_collapsed.F90 \
+adv_x_mock_rc_collapsed_wrong.F90 \
 adv_x_mock_cpu.F90 \
 adv_x_mock_seq.F90
 

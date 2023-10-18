@@ -14,11 +14,11 @@ MODULE Nemo_Adv_X_Run
 
     ABSTRACT INTERFACE
         SUBROUTINE adv_x_func &
-                (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, &
-                 psxy, e1e2t, tmask)
+                (jpi, jpj, ncats, &
+                 pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
             IMPORT :: wp
 
-            INTEGER                   , INTENT(in   ) ::   jpi, jpj           ! Dimension of the workspace.
+            INTEGER                   , INTENT(in   ) ::   jpi, jpj, ncats    ! Dimension of the workspace.
             REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
             REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
             REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   put                ! i-direction ice velocity at U-point [m/s]
@@ -34,7 +34,8 @@ MODULE Nemo_Adv_X_Run
   CONTAINS
   
     SUBROUTINE run_mock(mock_func, func_name, time_seq, &
-                        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+                        jpi, jpj, ncats &
+                        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
                         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
         ! Function specific variables.
         PROCEDURE(adv_x_func), POINTER, INTENT(in) :: mock_func
@@ -44,10 +45,10 @@ MODULE Nemo_Adv_X_Run
         REAL(wp), INTENT(inout) :: time_seq
 
         ! Variables required for runs.
-        INTEGER                   , INTENT(in) :: jpi, jpj    ! Dimension of the workspace.
-        REAL(wp)                  , INTENT(in) :: pdt         ! the time step
-        REAL(wp)                  , INTENT(in) :: pcrh        ! call adv_x then adv_y (=1) or the opposite (=0)
-        REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put         ! i-direction ice velocity at U-point [m/s]
+        INTEGER                   , INTENT(in) :: jpi, jpj, ncats   ! Dimension of the workspace.
+        REAL(wp)                  , INTENT(in) :: pdt               ! the time step
+        REAL(wp)                  , INTENT(in) :: pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
+        REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put               ! i-direction ice velocity at U-point [m/s]
         REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) :: e1e2t       ! associated metrics at t-point
         REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: tmask       ! land/ocean mask at T-pts    
         
@@ -103,8 +104,8 @@ MODULE Nemo_Adv_X_Run
             END IF
 
             call mock_func &
-                (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-                e1e2t, tmask)
+                (jpi, jpj, ncats, &
+                 pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
         END DO
         time_exec = omp_get_wtime() - time_start
 
@@ -137,6 +138,9 @@ program Nemo_Adv_X_Performance
     use Nemo_Adv_X_Collapse
     use Nemo_Adv_X_Collapse_CPU
     use Nemo_Adv_X_Collapse_Custom
+    use Nemo_Adv_X_Rc
+    use Nemo_Adv_X_Rc_Collapsed
+    use Nemo_Adv_X_Rc_Collapsed_Wrong
     use Nemo_Adv_X_Data_Beta
     use Nemo_Adv_X_Data_Cat
 
@@ -173,7 +177,7 @@ program Nemo_Adv_X_Performance
     PROCEDURE(adv_x_func), POINTER :: mock_func
 
     ! Variables that indicate workspace dimensions.
-    INTEGER :: JPI, JPJ
+    INTEGER :: JPI, JPJ, NCATS
 
 #ifdef DEBUG_ON
     write (*,*) ""
@@ -182,7 +186,7 @@ program Nemo_Adv_X_Performance
 
     ! Initialize the "init_" variables required for running the mock code.
     call initialize_adv_x &
-        (JPI, JPJ, &
+        (JPI, JPJ, NCATS &
          pdt, put, pcrh, init_psm , init_ps0, init_psx, init_psxx, init_psy, &
          init_psyy, init_psxy, e1e2t, tmask)
 
@@ -205,86 +209,106 @@ program Nemo_Adv_X_Performance
     CALL OMP_SET_NUM_THREADS(1)
     mock_func => adv_x_mock_seq
     call run_mock(mock_func, "sequential", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running cpu 1 thread.."
-! #endif
-!     !-------------------------------------!
-!     !  Perf test cpu code with 1 thread.  !
-!     !-------------------------------------!
-!     mock_func => adv_x_mock_cpu
-!     call run_mock(mock_func, "cpu", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running cpu 1 thread.."
+#endif
+    !-------------------------------------!
+    !  Perf test cpu code with 1 thread.  !
+    !-------------------------------------!
+    mock_func => adv_x_mock_cpu
+    call run_mock(mock_func, "cpu", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
 
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running collapse_cpu 1 thread.."
-! #endif
-!     !----------------------------------------------!
-!     !  Perf test collapse_cpu code with 1 thread.  !
-!     !----------------------------------------------!
-!     mock_func => adv_x_mock_collapse_cpu
-!     call run_mock(mock_func, "collapse_cpu", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running collapse_cpu 1 thread.."
+#endif
+    !----------------------------------------------!
+    !  Perf test collapse_cpu code with 1 thread.  !
+    !----------------------------------------------!
+    mock_func => adv_x_mock_collapse_cpu
+    call run_mock(mock_func, "collapse_cpu", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
     
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running sequential 7 threads.."
-! #endif
-!     !---------------------------------------------!
-!     !  Perf test sequential code with 7 threads.  !
-!     !---------------------------------------------!
-!     CALL OMP_SET_NUM_THREADS(7)
-!     mock_func => adv_x_mock_seq
-!     call run_mock(mock_func, "seq_7threads", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running sequential 7 threads.."
+#endif
+    !---------------------------------------------!
+    !  Perf test sequential code with 7 threads.  !
+    !---------------------------------------------!
+    CALL OMP_SET_NUM_THREADS(7)
+    mock_func => adv_x_mock_seq
+    call run_mock(mock_func, "seq_7threads", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running cpu 7 threads.."
-! #endif
-!     !-------------------------------------!
-!     !  Perf test cpu code with 7 thread.  !
-!     !-------------------------------------!
-!         mock_func => adv_x_mock_cpu
-!         call run_mock(mock_func, "cpu_7threads", time_seq, &
-!             JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!             init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)            
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running cpu 7 threads.."
+#endif
+    !-------------------------------------!
+    !  Perf test cpu code with 7 thread.  !
+    !-------------------------------------!
+    mock_func => adv_x_mock_cpu
+    call run_mock(mock_func, "cpu_7threads", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)              
 
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running collapse_cpu 7 threads.."
-! #endif
-!     !----------------------------------------------!
-!     !  Perf test collapse_cpu code with 7 thread.  !
-!     !----------------------------------------------!
-!     mock_func => adv_x_mock_collapse_cpu
-!     call run_mock(mock_func, "collapse_cpu_7threads", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy) 
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running collapse_cpu 7 threads.."
+#endif
+    !----------------------------------------------!
+    !  Perf test collapse_cpu code with 7 thread.  !
+    !----------------------------------------------!
+    mock_func => adv_x_mock_collapse_cpu
+    call run_mock(mock_func, "collapse_cpu_7threads", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy) 
 
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running data_beta 7 threads.."
-! #endif
-!     !-----------------------------!
-!     !  Perf test data_beta code.  !
-!     !-----------------------------!
-!     mock_func => adv_x_mock_data_beta
-!     call run_mock(mock_func, "data_beta", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running rc.."
+#endif    
+    !-----------------!
+    !  Call rc code.  !
+    !-----------------!
+    mock_func => adv_x_mock_rc
+    call run_mock(mock_func, "rc", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running data_beta 7 threads.."
+#endif
+    !-----------------------------!
+    !  Perf test data_beta code.  !
+    !-----------------------------!
+    mock_func => adv_x_mock_data_beta
+    call run_mock(mock_func, "data_beta", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
     
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running data_cat 7 threads.."
-! #endif
-!     !----------------------------!
-!     !  Perf test data_cat code.  !
-!     !----------------------------!
-!     mock_func => adv_x_mock_data_cat
-!     call run_mock(mock_func, "data_cat", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running data_cat 7 threads.."
+#endif
+    !----------------------------!
+    !  Perf test data_cat code.  !
+    !----------------------------!
+    mock_func => adv_x_mock_data_cat
+    call run_mock(mock_func, "data_cat", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
 
 #ifdef DEBUG_ON
     write (*,*) "main_program: running collapse_custom 7 threads.."
@@ -294,19 +318,21 @@ program Nemo_Adv_X_Performance
     !-----------------------------------!
     mock_func => adv_x_mock_collapse_custom
     call run_mock(mock_func, "collapse_custom", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
-! #ifdef DEBUG_ON
-!     write (*,*) "main_program: running collapse 7 threads.."
-! #endif
-!     !----------------------------!
-!     !  Perf test collapse code.  !
-!     !----------------------------!
-!     mock_func => adv_x_mock_collapse
-!     call run_mock(mock_func, "collapse", time_seq, &
-!         JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-!         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+#ifdef DEBUG_ON
+    write (*,*) "main_program: running collapse 7 threads.."
+#endif
+    !----------------------------!
+    !  Perf test collapse code.  !
+    !----------------------------!
+    mock_func => adv_x_mock_collapse
+    call run_mock(mock_func, "collapse", time_seq, &
+        JPI, JPJ, NCATS, & 
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."

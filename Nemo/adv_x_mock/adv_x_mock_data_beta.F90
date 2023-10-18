@@ -14,14 +14,14 @@ MODULE Nemo_Adv_X_Data_Beta
 contains 
 
     SUBROUTINE adv_x_mock_data_beta &
-        (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-        e1e2t, tmask)
+        (jpi, jpj, ncats, &
+         pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
     !!---------------------------------------------------------------------
     !! - Routine: adv_x_mock_data_beta
     !! - Purpose: Parallelized version from the adv_x_mock_data_beta branch
     !! - Source: https://earth.bsc.es/gitlab/amedvede/nemogcm_v40/-/blob/864baa76200868d06e129e1dff0f2ebb69b4424a/src/ICE/icedyn_adv_pra.F90
     !!---------------------------------------------------------------------
-    INTEGER                   , INTENT(in) :: jpi, jpj           ! Dimension of the workspace.
+    INTEGER                   , INTENT(in) :: jpi, jpj, ncats    ! Dimension of the workspace.
     REAL(wp)                  , INTENT(in) :: pdt                ! the time step
     REAL(wp)                  , INTENT(in) :: pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
     REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put                ! i-direction ice velocity at U-point [m/s]
@@ -63,7 +63,7 @@ contains
     jjmin = 2     - NINT(pcrh)   ! 1   or 2
     jjmax = jpjm1 + NINT(pcrh)   ! jpj or jpj-1
     !
-    jcat = SIZE( ps0 , 3 )   ! size of input arrays
+    jcat = ncats ! SIZE( ps0 , 3 )   ! size of input arrays
     !
     !$omp target data map(alloc:zf0,zfx,zfy,zbet,zfm,zfxx,zfyy,zfxy,zalg,zalg1,zalg1q)&
     !$omp& map(to:e1e2t,tmask,put) map(tofrom:psm,ps0,psx,psy,psxx,psyy,psxy)

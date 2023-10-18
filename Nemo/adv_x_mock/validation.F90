@@ -13,11 +13,11 @@ MODULE Nemo_Adv_X_Run
 
     ABSTRACT INTERFACE
         SUBROUTINE adv_x_func &
-                (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, &
-                 psxy, e1e2t, tmask)
+                (jpi, jpj, ncats, &
+                 pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
             IMPORT :: wp
 
-            INTEGER                   , INTENT(in   ) ::   jpi, jpj           ! Dimension of the workspace.
+            INTEGER                   , INTENT(in   ) ::   jpi, jpj, ncats    ! Dimension of the workspace.
             REAL(wp)                  , INTENT(in   ) ::   pdt                ! the time step
             REAL(wp)                  , INTENT(in   ) ::   pcrh               ! call adv_x then adv_y (=1) or the opposite (=0)
             REAL(wp), DIMENSION(:,:)  , INTENT(in   ) ::   put                ! i-direction ice velocity at U-point [m/s]
@@ -33,7 +33,8 @@ MODULE Nemo_Adv_X_Run
   CONTAINS
   
     SUBROUTINE run_mock(mock_func, func_name, time_seq, &
-                        jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+                        jpi, jpj, ncats, &
+                        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
                         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
                         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
         ! Function specific variables.
@@ -44,10 +45,10 @@ MODULE Nemo_Adv_X_Run
         REAL(wp), INTENT(in) :: time_seq
 
         ! Variables required for runs.
-        INTEGER                   , INTENT(in) :: jpi, jpj    ! Dimension of the workspace.
-        REAL(wp)                  , INTENT(in) :: pdt         ! the time step
-        REAL(wp)                  , INTENT(in) :: pcrh        ! call adv_x then adv_y (=1) or the opposite (=0)
-        REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put         ! i-direction ice velocity at U-point [m/s]
+        INTEGER                   , INTENT(in) :: jpi, jpj, ncats   ! Dimension of the workspace.
+        REAL(wp)                  , INTENT(in) :: pdt               ! the time step
+        REAL(wp)                  , INTENT(in) :: pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
+        REAL(wp), DIMENSION(:,:)  , INTENT(in) :: put               ! i-direction ice velocity at U-point [m/s]
         REAL(wp), DIMENSION(:,:)  , ALLOCATABLE, INTENT(in) :: e1e2t       ! associated metrics at t-point
         REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(in) :: tmask       ! land/ocean mask at T-pts    
         
@@ -93,8 +94,8 @@ MODULE Nemo_Adv_X_Run
         ! Time the execution of the given function.
         time_start = omp_get_wtime()
         call mock_func &
-            (jpi, jpj, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, &
-             e1e2t, tmask)
+            (jpi, jpj, ncats, & 
+             pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask)
         time_exec = omp_get_wtime() - time_start
 
         ! Validate results.
@@ -130,6 +131,9 @@ program Nemo_Adv_X_Validation
     use Nemo_Adv_X_Collapse
     use Nemo_Adv_X_Collapse_CPU
     use Nemo_Adv_X_Collapse_Custom
+    use Nemo_Adv_X_Rc
+    use Nemo_Adv_X_Rc_Collapsed
+    use Nemo_Adv_X_Rc_Collapsed_Wrong
     use Nemo_Adv_X_Data
     use Nemo_Adv_X_Data_Beta
     use Nemo_Adv_X_Data_Cat
@@ -168,7 +172,7 @@ program Nemo_Adv_X_Validation
     PROCEDURE(adv_x_func), POINTER :: mock_func
 
     ! Variables that indicate workspace dimensions.
-    INTEGER :: JPI, JPJ
+    INTEGER :: JPI, JPJ, NCATS
 
 #ifdef DEBUG_ON
     write (*,*) ""
@@ -177,7 +181,7 @@ program Nemo_Adv_X_Validation
 
     ! Initialize the "init_" variables required for running the mock code.
     call initialize_adv_x &
-        (JPI, JPJ, &
+        (JPI, JPJ, NCATS, &
          pdt, put, pcrh, init_psm , init_ps0, init_psx, init_psxx, init_psy, &
          init_psyy, init_psxy, e1e2t, tmask)
 
@@ -208,9 +212,9 @@ program Nemo_Adv_X_Validation
     !  Call sequential code as baseline.  !
     !-------------------------------------!
     time_start = omp_get_wtime()
-    call adv_x_mock_seq &
-        (JPI, JPJ, pdt, put , pcrh, seq_psm , seq_ps0, seq_psx, seq_psxx, &
-         seq_psy, seq_psyy, seq_psxy, e1e2t, tmask)
+    call adv_x_mock_seq(JPI, JPJ, NCATS, & 
+         pdt, put, pcrh, seq_psm , seq_ps0, seq_psx, seq_psxx, seq_psy, &
+         seq_psyy, seq_psxy, e1e2t, tmask)
     time_seq = omp_get_wtime() - time_start
 
 #ifdef DEBUG_ON
@@ -218,77 +222,125 @@ program Nemo_Adv_X_Validation
     write (*,*) "main_program: after sequential baseline"
 #endif
 
-    !----------------------------------!
-    !  Call sequential code as check.  !
-    !----------------------------------!
-    mock_func => adv_x_mock_seq
-    call run_mock(mock_func, "sequential", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+    ! !----------------------------------!
+    ! !  Call sequential code as check.  !
+    ! !----------------------------------!
+    ! mock_func => adv_x_mock_seq
+    ! call run_mock(mock_func, "sequential", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
-    !------------------------!
-    !  Call data_beta code.  !
-    !------------------------!
-    mock_func => adv_x_mock_data_beta
-    call run_mock(mock_func, "data_beta", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+    ! !------------------------!
+    ! !  Call data_beta code.  !
+    ! !------------------------!
+    ! mock_func => adv_x_mock_data_beta
+    ! call run_mock(mock_func, "data_beta", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
     
-    !-----------------------!
-    !  Call data_cat code.  !
-    !-----------------------!
-    mock_func => adv_x_mock_data_cat
-    call run_mock(mock_func, "data_cat", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+    ! !-----------------------!
+    ! !  Call data_cat code.  !
+    ! !-----------------------!
+    ! mock_func => adv_x_mock_data_cat
+    ! call run_mock(mock_func, "data_cat", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
 
+    ! !---------------------------!
+    ! !  Call collapse_cpu code.  !
+    ! !---------------------------!
+    ! mock_func => adv_x_mock_collapse_cpu
+    ! call run_mock(mock_func, "collapse_cpu", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
+
+    ! !-------------------------------------!
+    ! !  Perf test cpu code with 7 thread.  !
+    ! !-------------------------------------!
+    ! mock_func => adv_x_mock_cpu
+    ! call run_mock(mock_func, "cpu_7threads", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)            
+
+    !-----------------!
+    !  Call rc code.  !
+    !-----------------!
+    mock_func => adv_x_mock_rc
+    call run_mock(mock_func, "rc", time_seq, &
+        JPI, JPJ, NCATS, &
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)   
+    
+    !---------------------------------!
+    !  Call rc_collapsed_wrong code.  !
+    !---------------------------------!
+    mock_func => adv_x_mock_rc_collapsed_wrong
+    call run_mock(mock_func, "rc_collapsed_wrong", time_seq, &
+        JPI, JPJ, NCATS, &
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+    
     !---------------------------!
-    !  Call collapse_cpu code.  !
+    !  Call rc_collapsed code.  !
     !---------------------------!
-    mock_func => adv_x_mock_collapse_cpu
-    call run_mock(mock_func, "collapse_cpu", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)        
-
-    !------------------------------!
-    !  Call collapse_custom code.  !
-    !------------------------------!
-    mock_func => adv_x_mock_collapse_custom
-    call run_mock(mock_func, "collapse_custom", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    mock_func => adv_x_mock_rc_collapsed
+    call run_mock(mock_func, "rc_collapsed", time_seq, &
+        JPI, JPJ, NCATS, &
+        pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
         seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
         init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+    
+    ! !------------------------------!
+    ! !  Call collapse_custom code.  !
+    ! !------------------------------!
+    ! mock_func => adv_x_mock_collapse_custom
+    ! call run_mock(mock_func, "collapse_custom", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
-    !-----------------------!
-    !  Call collapse code.  !
-    !-----------------------!
-    mock_func => adv_x_mock_collapse
-    call run_mock(mock_func, "collapse", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+    ! !-----------------------!
+    ! !  Call collapse code.  !
+    ! !-----------------------!
+    ! mock_func => adv_x_mock_collapse
+    ! call run_mock(mock_func, "collapse", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
-    !-------------------!
-    !  Call data code.  !
-    !-------------------!
-    mock_func => adv_x_mock_data
-    call run_mock(mock_func, "data", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
+    ! !-------------------!
+    ! !  Call data code.  !
+    ! !-------------------!
+    ! mock_func => adv_x_mock_data
+    ! call run_mock(mock_func, "data", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)
 
-    !------------------------!
-    !  Call data_simd code.  !
-    !------------------------!
-    mock_func => adv_x_mock_data_simd
-    call run_mock(mock_func, "data_simd", time_seq, &
-        JPI, JPJ, pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
-        seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
-        init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
+    ! !------------------------!
+    ! !  Call data_simd code.  !
+    ! !------------------------!
+    ! mock_func => adv_x_mock_data_simd
+    ! call run_mock(mock_func, "data_simd", time_seq, &
+    !     JPI, JPJ, NCATS, &
+    !     pdt, put, pcrh, psm, ps0, psx, psxx, psy , psyy, psxy, e1e2t, tmask, &
+    !     seq_psm, seq_ps0, seq_psx, seq_psxx, seq_psy, seq_psyy, seq_psxy, &
+    !     init_psm, init_ps0, init_psx, init_psxx, init_psy, init_psyy, init_psxy)    
 
 #ifdef DEBUG_ON
     write (*,*) "OUT: main_program."

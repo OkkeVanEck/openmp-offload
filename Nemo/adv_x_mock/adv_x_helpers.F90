@@ -18,15 +18,16 @@ MODULE Nemo_Adv_X_Helpers
 contains
 
     SUBROUTINE initialize_adv_x &
-            (JPI, JPJ, &
+            (JPI, JPJ, NCATS, &
              pdt, put, pcrh, psm , ps0, psx, psxx, psy, psyy, psxy, e1e2t, tmask)
         !!----------------------------------------------------------
         !! - Routine: initialize_adv_x
         !! - Purpose: Initializes variables required for adv_x_mock.
         !!----------------------------------------------------------
         INTEGER, INTENT(out) :: &
-            JPI, &      ! i-Dimension of the workspace.
-            JPJ         ! j-Dimension of the workspace.
+            JPI, &      ! 1-Dimension of the workspace.
+            JPJ, &      ! 2-Dimension of the workspace.
+            NCATS       ! 3-Dimension of the workspace.
         
         REAL(wp)                               , INTENT(out) ::   pdt               ! the time step
         REAL(wp)                               , INTENT(out) ::   pcrh              ! call adv_x then adv_y (=1) or the opposite (=0)
@@ -44,7 +45,6 @@ contains
 
         ! Variables used for setting the dimensions.
         INTEGER :: &
-            NCATS, &    ! Number of categories, functioning as dim 3.
             TMASK3      ! Uncertain of the origin.
 
         ! Stat variable for reading environment values.
